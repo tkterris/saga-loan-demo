@@ -36,15 +36,19 @@ public class Loan {
   private Boolean approved;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  private JsonNullable<Date> loanRequestDate = JsonNullable.<Date>undefined();
+ // private JsonNullable<Date> loanRequestDate = JsonNullable.<Date>undefined();
+  private Date loanRequestDate = null;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  private JsonNullable<Date> loanCancelDate = JsonNullable.<Date>undefined();
+  //rivate JsonNullable<Date> loanCancelDate = JsonNullable.<Date>undefined();
+  private Date loanCancelDate = null;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  private JsonNullable<Date> loanApprovalDate = JsonNullable.<Date>undefined();
+  //private JsonNullable<Date> loanApprovalDate = JsonNullable.<Date>undefined();
+  private Date loanApprovalDate = null;
 
-  private JsonNullable<@Size(max = 256) String> comment = JsonNullable.<String>undefined();
+  //private JsonNullable<@Size(max = 256) String> comment = JsonNullable.<String>undefined();
+  private String comment = null;
 
   public Loan() {
     super();
@@ -145,7 +149,8 @@ public class Loan {
   }
 
   public Loan loanRequestDate(Date loanRequestDate) {
-    this.loanRequestDate = JsonNullable.of(loanRequestDate);
+    //this.loanRequestDate = JsonNullable.of(loanRequestDate);
+    this.loanRequestDate = loanRequestDate;
     return this;
   }
 
@@ -156,16 +161,19 @@ public class Loan {
   @Valid 
   @Schema(name = "loanRequestDate", example = "2016-08-29T09:12:33.001Z", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("loanRequestDate")
-  public JsonNullable<Date> getLoanRequestDate() {
+  //public JsonNullable<Date> getLoanRequestDate() {
+  public Date getLoanRequestDate() {
     return loanRequestDate;
   }
 
-  public void setLoanRequestDate(JsonNullable<Date> loanRequestDate) {
+  //public void setLoanRequestDate(JsonNullable<Date> loanRequestDate) {
+  public void setLoanRequestDate(Date loanRequestDate) {
     this.loanRequestDate = loanRequestDate;
   }
 
   public Loan loanCancelDate(Date loanCancelDate) {
-    this.loanCancelDate = JsonNullable.of(loanCancelDate);
+    //this.loanCancelDate = JsonNullable.of(loanCancelDate);
+    this.loanCancelDate = loanCancelDate;
     return this;
   }
 
@@ -176,16 +184,19 @@ public class Loan {
   @Valid 
   @Schema(name = "loanCancelDate", example = "2016-08-29T09:12:33.001Z", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("loanCancelDate")
-  public JsonNullable<Date> getLoanCancelDate() {
+  //public JsonNullable<Date> getLoanCancelDate() {
+  public Date getLoanCancelDate() {
     return loanCancelDate;
   }
 
-  public void setLoanCancelDate(JsonNullable<Date> loanCancelDate) {
+  //public void setLoanCancelDate(JsonNullable<Date> loanCancelDate) {
+  public void setLoanCancelDate(Date loanCancelDate) {
     this.loanCancelDate = loanCancelDate;
   }
 
   public Loan loanApprovalDate(Date loanApprovalDate) {
-    this.loanApprovalDate = JsonNullable.of(loanApprovalDate);
+    //this.loanApprovalDate = JsonNullable.of(loanApprovalDate);
+    this.loanApprovalDate = loanApprovalDate;
     return this;
   }
 
@@ -196,16 +207,19 @@ public class Loan {
   @Valid 
   @Schema(name = "loanApprovalDate", example = "2016-08-29T09:12:33.001Z", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("loanApprovalDate")
-  public JsonNullable<Date> getLoanApprovalDate() {
+  //public JsonNullable<Date> getLoanApprovalDate() {
+  public Date getLoanApprovalDate() {
     return loanApprovalDate;
   }
 
-  public void setLoanApprovalDate(JsonNullable<Date> loanApprovalDate) {
+  //public void setLoanApprovalDate(JsonNullable<Date> loanApprovalDate) {
+  public void setLoanApprovalDate(Date loanApprovalDate) {
     this.loanApprovalDate = loanApprovalDate;
   }
 
   public Loan comment(String comment) {
-    this.comment = JsonNullable.of(comment);
+    //this.comment = JsonNullable.of(comment);
+    this.comment = comment;
     return this;
   }
 
@@ -216,11 +230,13 @@ public class Loan {
   @Size(max = 256) 
   @Schema(name = "comment", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("comment")
-  public JsonNullable<@Size(max = 256) String> getComment() {
+  //public JsonNullable<@Size(max = 256) String> getComment() {
+  public String getComment() {
     return comment;
   }
 
-  public void setComment(JsonNullable<String> comment) {
+  //public void setComment(JsonNullable<String> comment) {
+  public void setComment(String comment) {
     this.comment = comment;
   }
 
@@ -237,10 +253,16 @@ public class Loan {
         Objects.equals(this.amount, loan.amount) &&
         Objects.equals(this.applicantId, loan.applicantId) &&
         Objects.equals(this.approved, loan.approved) &&
+        Objects.equals(this.loanRequestDate, loan.loanRequestDate) &&
+        Objects.equals(this.loanCancelDate, loan.loanCancelDate) &&
+        Objects.equals(this.loanApprovalDate, loan.loanApprovalDate) &&
+        Objects.equals(this.comment, loan.comment);
+        /** 
         equalsNullable(this.loanRequestDate, loan.loanRequestDate) &&
         equalsNullable(this.loanCancelDate, loan.loanCancelDate) &&
         equalsNullable(this.loanApprovalDate, loan.loanApprovalDate) &&
         equalsNullable(this.comment, loan.comment);
+        **/
   }
 
   private static <T> boolean equalsNullable(JsonNullable<T> a, JsonNullable<T> b) {
@@ -249,15 +271,15 @@ public class Loan {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, amount, applicantId, approved, hashCodeNullable(loanRequestDate), hashCodeNullable(loanCancelDate), hashCodeNullable(loanApprovalDate), hashCodeNullable(comment));
+    return Objects.hash(id, amount, applicantId, approved, loanRequestDate, loanCancelDate, loanApprovalDate, comment);
   }
 
-  private static <T> int hashCodeNullable(JsonNullable<T> a) {
-    if (a == null) {
-      return 1;
-    }
-    return a.isPresent() ? Arrays.deepHashCode(new Object[]{a.get()}) : 31;
-  }
+  // private static <T> int hashCodeNullable(JsonNullable<T> a) {
+  //   if (a == null) {
+  //     return 1;
+  //   }
+  //   return a.isPresent() ? Arrays.deepHashCode(new Object[]{a.get()}) : 31;
+  // }
 
   @Override
   public String toString() {

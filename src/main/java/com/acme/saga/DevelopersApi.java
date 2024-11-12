@@ -78,5 +78,10 @@ public class DevelopersApi extends RouteBuilder {
                 .endParam()
                 .to("direct:searchLoans");
         
+        from("direct:searchApplicants")
+            .log("Search applicants invoked...");
+
+        from("direct:searchLoans")
+            .log("Search loans invoked...");           
     }
 }

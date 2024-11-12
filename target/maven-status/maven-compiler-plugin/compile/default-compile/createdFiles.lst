@@ -1,0 +1,7 @@
+com/acme/saga/AdminsApi.class
+org/openapitools/model/Loan.class
+com/acme/saga/SagaLoanDemoApplication.class
+org/openapitools/model/Applicant.class
+org/openapitools/model/LoanRequest.class
+com/acme/saga/RestConfiguration.class
+com/acme/saga/DevelopersApi.class

@@ -14,8 +14,8 @@ public class RestConfiguration extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         restConfiguration()
-            .scheme("https")
-            .host("virtserver.swaggerhub.com")
+            .scheme("http")
+            .host("localhost")
             .component("servlet")
             .bindingMode(RestBindingMode.auto)
             .clientRequestValidation(false)

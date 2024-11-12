@@ -7,7 +7,14 @@ package com.acme.saga;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestParamType;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.openapitools.model.*;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.LoggingLevel;
@@ -15,9 +22,19 @@ import org.apache.camel.LoggingLevel;
 @Component
 public class AdminsApi extends RouteBuilder {
 
+    @Bean
+    @Primary
+    public Jackson2ObjectMapperBuilder customObjectMapper() {
+        return new Jackson2ObjectMapperBuilder()
+                // other configs are possible
+                .modules(new JsonNullableModule());
+    }
+
     @Override
     public void configure() throws Exception {
         
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JsonNullableModule());
 
         /**
         POST /saga/applicant : adds an applicant
@@ -75,5 +92,21 @@ public class AdminsApi extends RouteBuilder {
                 .endParam()
                 .to("direct:createLoan");
         
+        from("direct:addApplicant")
+            .log("Applicant added...");
+
+        from("direct:addLoan")
+            .process( exchange -> {
+                Loan loan = (Loan) exchange.getIn().getBody(Loan.class);
+                log.info("loan->id: " + loan.getId().toString() + 
+                         ", amount: " + loan.getAmount().toString() +
+                         ", applicantId: " + loan.getApplicantId().toString() +
+                         ", approved: " + loan.getApproved().toString() +
+                         ", loanRequestDate: " + loan.getLoanRequestDate().toString());
+            })
+            .log("Loan added...");    
+
+        from("direct:createLoan")
+            .log("Create loan...");                
     }
 }
