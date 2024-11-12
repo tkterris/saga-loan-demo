@@ -1,0 +1,14 @@
+camel:
+  service:
+    lra:
+      enabled: true
+      coordinator-url: http://localhost:8080
+      local-participant-url: http://localhost:8080/api
+  component:
+    servlet:
+      mapping:
+        context-path: /loandemo/*
+saga-demo:
+  endpoints:
+    loan-endpoint: http://localhost:8080/loan
+    applicant-endpoint: http://localhost:8080/applicant
