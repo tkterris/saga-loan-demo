@@ -23,6 +23,12 @@ public class ApplicantController {
 
     @Autowired private ApplicantService applicantService;
 
+    @GetMapping("/applicant/{id}")
+    public Applicant fetchApplicantById( Integer id ) {
+        return applicantService.findApplicantById( id );
+    }
+
+
     @PostMapping(path = "/applicant", produces = MediaType.APPLICATION_JSON_VALUE)
     public Applicant saveApplicant( @Validated @RequestBody Applicant applicant )
     {

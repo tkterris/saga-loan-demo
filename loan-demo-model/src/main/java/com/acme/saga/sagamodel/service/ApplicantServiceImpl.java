@@ -2,6 +2,7 @@ package com.acme.saga.sagamodel.service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,21 @@ public class ApplicantServiceImpl implements ApplicantService {
 
 
     @Autowired ApplicantRepository applicantRepository;    
+
+    @Override
+    public Applicant findApplicantById( Integer id ) {
+
+        Optional<Applicant> theApplicant = applicantRepository.findById( id );
+
+        if(theApplicant.isPresent()) {
+            return theApplicant.get();
+        }
+        else
+        {
+            throw new RuntimeException("Applicant not found with id: " + id);
+        }
+    }
+
 
     @Override
     public Applicant saveApplicant( Applicant applicant ) {

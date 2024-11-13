@@ -5,8 +5,10 @@ import com.acme.saga.sagamodel.model.Applicant;
 
 public interface ApplicantService {
 
+
     Applicant saveApplicant( Applicant applicant );
     List<Applicant> fetchApplicantList();
+    Applicant findApplicantById( Integer id );
     Applicant updateApplicant( Applicant applicant, Integer Id );
     void deleteApplicantById( Integer Id );
 
