@@ -2,59 +2,188 @@ package com.acme.saga.applicant.service;
 
 import java.util.List;
 import java.util.Objects;
-
+import java.time.Instant;
+import java.util.Date;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
 import com.acme.saga.applicant.helpers.Utils;
-import com.acme.saga.sagamodel.model.Applicant;
+import com.acme.saga.applicant.model.Applicant;
+import com.acme.saga.applicant.model.Loan;
 import com.acme.saga.applicant.dto.UpdateLimitResponseDTO;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class ApplicantServiceImpl implements ApplicantService {
 
-    @Autowired
     private RestTemplate restTemplate;
 
     @Value("${applicant.get.endpoint}")
-    private String applicantEndpointURI;
+    private String applicantGetEndpointURI;
 
+    @Value("${applicant.update.endpoint}")
+    private String applicantUpdateEndpointURI;
 
     @Override
-    public ResponseEntity<UpdateLimitResponseDTO> updateLoanLimit( Loan loan ) {
+    /**
+     * 
+     * @param loan
+     * @return
+     * @throws ResourceNotFoundException
+     * @throws InsufficientFundsException
+     */
+    public ResponseEntity<UpdateLimitResponseDTO> updateLoanLimit( Loan loan ) 
+        throws ResourceNotFoundException, InsufficientFundsException {
 
-        UpdateLimitResponseDTO updateLimitResponse = new UpdateLimitResponseDTO();
+        restTemplate = new RestTemplate();
 
-        ResponseEntity<Applicant> aResponse = restTemplate.getForEntity(applicantEndpointURI, Applicant.class);
+        double dLimit = 0.00, 
+               dBalance = 0.00,
+               dLimitUsed = 0.00;
+
+        BigDecimal bBalance = null;
+
+        DecimalFormat df = new DecimalFormat("#,###,##0.00");
+
+        UpdateLimitResponseDTO updateLimitResponse = null;
+ 
+        // retrieve applicant for loan
+        //applicantGetEndpointURI += ("/" + loan.getApplicantId().toString());
+        ResponseEntity<Applicant> aResponse = restTemplate.getForEntity(applicantGetEndpointURI + "/" + loan.getApplicantId().toString(), Applicant.class);
         Applicant rApplicant = aResponse.getBody();
-        ResponseEntity<UpdateLimitResponseDTO> uResponse = ResponseEntity.status(HttpStatus.OK)
-                                                                        .header("custom-key", "custom-value");
 
-        if (Objects.nonNull(uResponse)) {
-            // fill out UpdateLimitResponseDTO
-            updateLimitResponse.builder()
-                               .applicantId(rApplicant.getId())
-                               .loanId(loan.getId())
-                               .originalLimitAmount()
-                               .requestAmount()
-                               .remainingAmount()
-                               .approved()
-                               .loanComment(loan.getComment())
-                               .applicantComment(rApplicant.getComment());
-            uResponse.setBody( updateLimitResponse );
-            return uResponse;
+        // handle response
+        if(Objects.isNull(rApplicant)) {
+            log.error("Unable to retrieve Applicant for ID: " + loan.getApplicantId().toString() +
+                      ", for Loan ID: " + loan.getId().toString());
+            throw new ResourceNotFoundException("Unable to retrieve applicant id: " + 
+                                                loan.getApplicantId().toString() +
+                                                ", for loan id: " + loan.getId().toString());
+        }
+
+        // setup response entity for return 
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add("acme-loan-update", "success");
+        responseHeaders.add("acme-loan-id", loan.getId().toString());
+        responseHeaders.add("acme-applicant-id", rApplicant.getId().toString());
+
+
+
+        // calculate balance                                                                        
+        dLimit = rApplicant.getLimit().doubleValue();
+        dLimitUsed = rApplicant.getLimitUsed().doubleValue();
+        dBalance = dLimit - dLimitUsed;
+
+        bBalance = new BigDecimal(dBalance);
+
+        // check loan amount is <= balance - request
+        if(loan.getAmount().compareTo(bBalance) < 0) {
+            log.error("Insufficient funds for Loan ID: " + loan.getId().toString());
+            log.error("    Applicant ID: " + rApplicant.getId().toString());
+            log.error("    Loan request: " + df.format(loan.getAmount()));
+            log.error("    Applicant balance: " + df.format(bBalance));
+            throw new InsufficientFundsException("Loan amount: " +
+                                                    df.format(loan.getAmount()) +
+                                                    ", is greater than applicant balance: " +
+                                                    df.format(bBalance.toString()));
+        }
+
+        // fill out UpdateLimitResponseDTO, included in the response
+        updateLimitResponse = UpdateLimitResponseDTO.builder()
+                            .applicantId(rApplicant.getId())
+                            .loanId(loan.getId())
+                            .originalLimitAmount(rApplicant.getLimit())
+                            .requestAmount(loan.getAmount())
+                            .remainingAmount(rApplicant.getLimit().subtract(rApplicant.getLimitUsed().add(loan.getAmount())))
+                            .approved(true)
+                            .loanComment(loan.getComment())
+                            .applicantComment(rApplicant.getComment())
+                            .build();
+
+        ResponseEntity<UpdateLimitResponseDTO> uResponse = new ResponseEntity<>(updateLimitResponse, responseHeaders, HttpStatus.OK);
+        
+        // update limitUsed for Applicant
+        rApplicant.setLimitUsed(rApplicant.getLimitUsed().add(loan.getAmount()));
+        rApplicant.setLimitUpdateDate(Date.from(Instant.now()));
+        
+        aResponse = updateApplicant(rApplicant.getId(), rApplicant);
+
+        // Handle the response
+        if (aResponse.getStatusCode().is2xxSuccessful()) {
+            log.info("Applicant with ID: " + rApplicant.getId().toString() + " updated...");
         } else {
-            throw new ResourceNotFoundException("");
-        }        
+            log.error("Update on Applicant entity failed, Applicant ID: " + rApplicant.getId().toString());
+            throw new EntityUpdateException("Limit used update failed for Applicant ID: " + 
+                                            rApplicant.getId().toString());
+        }            
 
+        return uResponse;
 
     }
 
+    /**
+     * 
+     */
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public class ResourceNotFoundException extends RuntimeException {
-        // ...
+        public ResourceNotFoundException(String message) {
+            super(message);
+        }
     }    
 
+    /**
+     * 
+     */
+    @ResponseStatus(HttpStatus.NOT_MODIFIED)
+    public class EntityUpdateException extends RuntimeException {
+        public EntityUpdateException(String message) {
+            super(message);
+        }
+    }        
 
+    /**
+     * 
+     */
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public class InsufficientFundsException extends RuntimeException {
+        public InsufficientFundsException(String message) {
+            super(message);
+        }
+    }    
+
+    /**
+     * 
+     * @param applicantId
+     * @param applicant
+     * @return
+     */
+    private ResponseEntity<Applicant> updateApplicant(Integer applicantId, Applicant applicant) {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+        HttpEntity<Applicant> requestEntity = new HttpEntity<>(applicant, headers);
+        applicantUpdateEndpointURI += ("/" + applicant.getId());
+        ResponseEntity<Applicant> response = restTemplate.exchange(
+            applicantUpdateEndpointURI, // CRUD update API endpoint
+            HttpMethod.PUT,
+            requestEntity,
+            Applicant.class
+        );
+
+        if(Objects.nonNull(response))
+            log.info("updateApplicant: successful update on loan balance for Applicant ID: " + applicant.getId().toString());
+
+         return response;
+
+    }
 }

@@ -39,4 +39,7 @@ public class Applicant implements Serializable {
     @Column(name="comment")
     private String comment;
 
+    @Column(name="limitused")
+    private BigDecimal limitUsed;   
+
 }

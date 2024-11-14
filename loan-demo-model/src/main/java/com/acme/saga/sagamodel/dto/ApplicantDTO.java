@@ -21,5 +21,6 @@ public class ApplicantDTO {
     private Boolean approved;
     private Date limitUpdateDate;
     private String comment;    
+    private BigDecimal limitUsed;
 
 }

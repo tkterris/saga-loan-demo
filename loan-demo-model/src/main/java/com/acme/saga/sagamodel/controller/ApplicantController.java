@@ -24,7 +24,7 @@ public class ApplicantController {
     @Autowired private ApplicantService applicantService;
 
     @GetMapping("/applicant/{id}")
-    public Applicant fetchApplicantById( Integer id ) {
+    public Applicant fetchApplicantById( @PathVariable( "id" ) Integer id ) {
         return applicantService.findApplicantById( id );
     }
 

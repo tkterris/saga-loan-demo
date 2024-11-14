@@ -1,4 +1,4 @@
-package com.acme.saga.loandemo.dto;
+package com.acme.saga.applicant.dto;
 
 import lombok.Builder;
 import lombok.Data;
