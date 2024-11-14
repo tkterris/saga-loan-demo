@@ -47,6 +47,8 @@ public class ApplicantServiceImpl implements ApplicantService {
 
         restTemplate = new RestTemplate();
 
+        ResponseEntity<Applicant> aResponse = null;
+
         double dLimit = 0.00, 
                dBalance = 0.00,
                dLimitUsed = 0.00;
@@ -59,7 +61,13 @@ public class ApplicantServiceImpl implements ApplicantService {
  
         // retrieve applicant for loan
         //applicantGetEndpointURI += ("/" + loan.getApplicantId().toString());
-        ResponseEntity<Applicant> aResponse = restTemplate.getForEntity(applicantGetEndpointURI + "/" + loan.getApplicantId().toString(), Applicant.class);
+        try {
+            aResponse = restTemplate.getForEntity(applicantGetEndpointURI + "/" + loan.getApplicantId().toString(), Applicant.class);
+        }
+        catch(RuntimeException e) {
+            throw new ResourceNotFoundException("Could not find Applicant with ID: " + loan.getApplicantId().toString());
+        }
+
         Applicant rApplicant = aResponse.getBody();
 
         // handle response
@@ -79,15 +87,17 @@ public class ApplicantServiceImpl implements ApplicantService {
 
 
 
-        // calculate balance                                                                        
-        dLimit = rApplicant.getLimit().doubleValue();
-        dLimitUsed = rApplicant.getLimitUsed().doubleValue();
+        // calculate balance         
+        if(Objects.nonNull(rApplicant.getLimit()))                                                               
+            dLimit = rApplicant.getLimit().doubleValue();
+        if(Objects.nonNull(rApplicant.getLimitUsed()))
+            dLimitUsed = rApplicant.getLimitUsed().doubleValue();
         dBalance = dLimit - dLimitUsed;
 
         bBalance = new BigDecimal(dBalance);
 
         // check loan amount is <= balance - request
-        if(loan.getAmount().compareTo(bBalance) < 0) {
+        if(loan.getAmount().compareTo(bBalance) > 0) {
             log.error("Insufficient funds for Loan ID: " + loan.getId().toString());
             log.error("    Applicant ID: " + rApplicant.getId().toString());
             log.error("    Loan request: " + df.format(loan.getAmount()));
@@ -95,8 +105,13 @@ public class ApplicantServiceImpl implements ApplicantService {
             throw new InsufficientFundsException("Loan amount: " +
                                                     df.format(loan.getAmount()) +
                                                     ", is greater than applicant balance: " +
-                                                    df.format(bBalance.toString()));
+                                                    df.format(bBalance));
         }
+
+        // now update with new totals
+        dLimitUsed += loan.getAmount().doubleValue();
+        dBalance = dLimit - dLimitUsed;       
+        bBalance = new BigDecimal(dBalance);
 
         // fill out UpdateLimitResponseDTO, included in the response
         updateLimitResponse = UpdateLimitResponseDTO.builder()
@@ -104,7 +119,7 @@ public class ApplicantServiceImpl implements ApplicantService {
                             .loanId(loan.getId())
                             .originalLimitAmount(rApplicant.getLimit())
                             .requestAmount(loan.getAmount())
-                            .remainingAmount(rApplicant.getLimit().subtract(rApplicant.getLimitUsed().add(loan.getAmount())))
+                            .remainingAmount(new BigDecimal(df.format(bBalance)))
                             .approved(true)
                             .loanComment(loan.getComment())
                             .applicantComment(rApplicant.getComment())
@@ -112,8 +127,10 @@ public class ApplicantServiceImpl implements ApplicantService {
 
         ResponseEntity<UpdateLimitResponseDTO> uResponse = new ResponseEntity<>(updateLimitResponse, responseHeaders, HttpStatus.OK);
         
+
+
         // update limitUsed for Applicant
-        rApplicant.setLimitUsed(rApplicant.getLimitUsed().add(loan.getAmount()));
+        rApplicant.setLimitUsed(new BigDecimal(dLimitUsed));
         rApplicant.setLimitUpdateDate(Date.from(Instant.now()));
         
         aResponse = updateApplicant(rApplicant.getId(), rApplicant);
@@ -172,9 +189,8 @@ public class ApplicantServiceImpl implements ApplicantService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
         HttpEntity<Applicant> requestEntity = new HttpEntity<>(applicant, headers);
-        applicantUpdateEndpointURI += ("/" + applicant.getId());
         ResponseEntity<Applicant> response = restTemplate.exchange(
-            applicantUpdateEndpointURI, // CRUD update API endpoint
+            applicantUpdateEndpointURI + "/" + applicant.getId().toString(), // CRUD update API endpoint
             HttpMethod.PUT,
             requestEntity,
             Applicant.class

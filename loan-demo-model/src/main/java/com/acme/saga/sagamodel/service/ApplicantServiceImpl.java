@@ -59,6 +59,10 @@ public class ApplicantServiceImpl implements ApplicantService {
             oApplicant.setLimitUpdateDate( applicant.getLimitUpdateDate() );
         }
 
+        if( Objects.nonNull( applicant.getLimitUsed() )) {
+            oApplicant.setLimitUsed( applicant.getLimitUsed() );
+        }
+
         if( Objects.nonNull( applicant.getComment() )  && !"".equalsIgnoreCase( applicant.getComment() )) {
             oApplicant.setComment( applicant.getComment() );
         } 
