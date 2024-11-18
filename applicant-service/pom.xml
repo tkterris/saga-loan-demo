@@ -13,7 +13,7 @@
 	<version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>	
 	<name>loan-demo-applicant-service</name>
-	<description>Saga loan demo- - applicant service</description>
+	<description>Saga loan demo - applicant service</description>
 	<properties>
 		<java.version>17</java.version>
 		<saga.demo.version>0.0.1-SNAPSHOT</saga.demo.version>

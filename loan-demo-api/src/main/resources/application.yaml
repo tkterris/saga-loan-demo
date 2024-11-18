@@ -1,14 +1,35 @@
 camel:
-  service:
-    lra:
+  servlet:
+    mapping:
       enabled: true
-      coordinator-url: http://localhost:8080
-      local-participant-url: http://localhost:8080/api
-  component:
-    servlet:
-      mapping:
-        context-path: /loandemo/*
+      context-path: /loandemo/api/*  
+  lra:
+    enabled: true
+    coordinator-url: http://localhost:8080
+    local-participant-url: http://localhost:${server.port}/loandemo/api
+  service:
+    lra.enabled: true
+  dataformat:
+    json-jackson:
+      auto-discover-object-mapper: true    
 saga-demo:
-  endpoints:
-    loan-endpoint: http://localhost:8080/loan
-    applicant-endpoint: http://localhost:8080/applicant
+  loan:
+    create:
+      endpoint: "http://localhost:8084/sagaloandemo/loan/createloan"
+    delete:
+      endpoint: "http://localhost:8084/sagaloandemo/loan/deleteloan"
+  applicant:
+    update-limit:
+      endpoint: "http://localhost:8083/sagaloandemo/applicant/updateloanlimit"
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.springframework.security: debug
+# server configuration
+server:
+  port: 8081
+#  servlet:
+#    context-path: /loandemo/api

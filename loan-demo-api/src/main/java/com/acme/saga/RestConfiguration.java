@@ -17,7 +17,8 @@ public class RestConfiguration extends RouteBuilder {
             .scheme("http")
             .host("localhost")
             .component("servlet")
-            .bindingMode(RestBindingMode.auto)
+            //.bindingMode(RestBindingMode.auto)
+            .bindingMode(RestBindingMode.json)
             .clientRequestValidation(false)
             .apiProperty("api.title", "Saga Loan Demo API")
             .apiProperty("api.version", "1.0.0");

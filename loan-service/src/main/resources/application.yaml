@@ -1,0 +1,18 @@
+loan:
+  create:
+    endpoint: "http://localhost:8082/sagaloandemo/crud/loan"
+  delete:
+    endpoint: "http://localhost:8082/sagaloandemo/crud/loan"
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.springframework.security: debug
+
+server:
+  port: 8084
+  servlet:
+    context-path: /sagaloandemo/loan

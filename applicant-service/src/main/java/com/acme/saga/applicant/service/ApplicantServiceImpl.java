@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.time.Instant;
 import java.util.Date;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 
         BigDecimal bBalance = null;
 
-        DecimalFormat df = new DecimalFormat("#,###,##0.00");
+        DecimalFormat df = new DecimalFormat("######0.00");
 
         UpdateLimitResponseDTO updateLimitResponse = null;
  
@@ -86,6 +87,8 @@ public class ApplicantServiceImpl implements ApplicantService {
         responseHeaders.add("acme-applicant-id", rApplicant.getId().toString());
 
 
+        log.info("loan object: " + loan.toString());
+        log.info("applicant object: " + rApplicant.toString());
 
         // calculate balance         
         if(Objects.nonNull(rApplicant.getLimit()))                                                               
@@ -113,21 +116,21 @@ public class ApplicantServiceImpl implements ApplicantService {
         dBalance = dLimit - dLimitUsed;       
         bBalance = new BigDecimal(dBalance);
 
+        log.info("dLimitUsed: " + dLimitUsed+"");
+        log.info("dBalance: " + dBalance+"");
+
+
         // fill out UpdateLimitResponseDTO, included in the response
         updateLimitResponse = UpdateLimitResponseDTO.builder()
                             .applicantId(rApplicant.getId())
                             .loanId(loan.getId())
                             .originalLimitAmount(rApplicant.getLimit())
                             .requestAmount(loan.getAmount())
-                            .remainingAmount(new BigDecimal(df.format(bBalance)))
+                            .remainingAmount(new BigDecimal(df.format(bBalance)).setScale(2, RoundingMode.HALF_UP))
                             .approved(true)
                             .loanComment(loan.getComment())
                             .applicantComment(rApplicant.getComment())
                             .build();
-
-        ResponseEntity<UpdateLimitResponseDTO> uResponse = new ResponseEntity<>(updateLimitResponse, responseHeaders, HttpStatus.OK);
-        
-
 
         // update limitUsed for Applicant
         rApplicant.setLimitUsed(new BigDecimal(dLimitUsed));
@@ -143,6 +146,8 @@ public class ApplicantServiceImpl implements ApplicantService {
             throw new EntityUpdateException("Limit used update failed for Applicant ID: " + 
                                             rApplicant.getId().toString());
         }            
+
+        ResponseEntity<UpdateLimitResponseDTO> uResponse = new ResponseEntity<>(updateLimitResponse, responseHeaders, HttpStatus.OK);
 
         return uResponse;
 

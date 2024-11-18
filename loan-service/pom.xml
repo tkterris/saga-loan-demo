@@ -3,32 +3,30 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.5</version>
-		<relativePath/> <!-- lookup parent from repository -->
+    	<groupId>com.acme.saga</groupId>
+    	<artifactId>sagaLoanDemo</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
 	</parent>
+
 	<groupId>com.acme.saga</groupId>
-	<artifactId>loan-service</artifactId>
+	<artifactId>loanService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>saga-loan-demo-loan-service</name>
-	<description>Saga loan demo- - loan service</description>
+    <packaging>jar</packaging>		
+	<name>loan-demo-loan-service</name>
+	<description>Saga loan demo - loan service</description>
 	<properties>
 		<java.version>17</java.version>
-		<camel.version>4.8.1</camel.version>
-                <openapi.version>0.2.6</openapi.version>
+		<saga.demo.version>0.0.1-SNAPSHOT</saga.demo.version>		
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-data-rest</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.camel.springboot</groupId>
-			<artifactId>camel-spring-boot-starter</artifactId>
-			<version>${camel.version}</version>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-core</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -36,80 +34,9 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-    			<groupId>org.openapitools</groupId>
-    			<artifactId>jackson-databind-nullable</artifactId>
-    			<version>${openapi.version}</version>
-		</dependency>
-		<dependency>
-    			<groupId>javax.validation</groupId>
-    			<artifactId>validation-api</artifactId>
-    			<version>2.0.1.Final</version>
-		</dependency>
-		<dependency>
-    			<groupId>javax.annotation</groupId>
-    			<artifactId>javax.annotation-api</artifactId>
-    			<version>1.3.2</version>
-		</dependency>
-		<dependency>
-    			<groupId>org.openapitools</groupId>
-    			<artifactId>jackson-databind-nullable</artifactId>
-    			<version>${openapi.version}</version>
-		</dependency>
-                <dependency>
-                	<groupId>io.springfox</groupId>
-                        <artifactId>springfox-swagger2</artifactId>
-			<version>3.0.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>io.swagger.core.v3</groupId>
-					<artifactId>swagger-annotations</artifactId>
-				</exclusion>
-			</exclusions>
-                </dependency>
-		<dependency>
-    			<groupId>io.swagger.core.v3</groupId>
-    			<artifactId>swagger-annotations</artifactId>
-    			<version>2.2.25</version>
-		</dependency>
-       	<dependency>
-            <groupId>org.apache.camel.springboot</groupId>
-            <artifactId>camel-jackson-starter</artifactId>
-			<version>${camel.version}</version>
-        </dependency>
-    	<dependency>
-      		<groupId>org.apache.camel</groupId>
-      		<artifactId>camel-core</artifactId>	
-			<version>${camel.version}</version>					
-		</dependency>
-		<dependency>
-    		<groupId>org.apache.camel.springboot</groupId>
-		    <artifactId>camel-dataformat-starter</artifactId>
-		    <version>${camel.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-openapi-java</artifactId>
-			<version>${camel.version}</version>
-		</dependency>		
-		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-		</dependency>
-        	<dependency>
-            		<groupId>org.apache.camel.springboot</groupId>
-            		<artifactId>camel-lra-starter</artifactId>
-			<version>${camel.version}</version>
-        	</dependency>
-		<dependency>
-    			<groupId>org.apache.camel</groupId>
-    			<artifactId>camel-rest</artifactId>
-    			<version>${camel.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -118,9 +45,36 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>				
 			</plugin>
 		</plugins>
 	</build>
-
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 
 </project>

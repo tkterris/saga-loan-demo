@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
 
 import com.acme.saga.sagamodel.model.Loan;
 import com.acme.saga.sagamodel.service.LoanService;
+import com.acme.saga.sagamodel.dto.DeleteLoanResponseDTO;
 
 import com.acme.saga.sagamodel.model.Applicant;
 
@@ -45,9 +47,8 @@ public class LoanController {
     }
 
     @DeleteMapping( "/loan/{id}" )
-    public String deleteLoan( @PathVariable( "id" ) Integer Id ) {
-        loanService.deleteLoanById( Id );
-        return "Deleted Successfully";
+    public ResponseEntity<DeleteLoanResponseDTO> deleteLoan( @PathVariable( "id" ) Integer Id ) {
+        return loanService.deleteLoanById( Id );
     } 
 
 }

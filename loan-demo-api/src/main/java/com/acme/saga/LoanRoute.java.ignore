@@ -3,33 +3,28 @@ package com.acme.saga;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestParamType;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Bean;
 import org.openapitools.model.*;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.openapitools.jackson.nullable.JsonNullableModule;
+
 
 @Component
 public class LoanRoute extends RouteBuilder {
     
-    @Bean
-    @Primary
-    public Jackson2ObjectMapperBuilder customObjectMapper() {
-        return new Jackson2ObjectMapperBuilder()
-                // other configs are possible
-                .modules(new JsonNullableModule());
-    }
-
     @Override
     public void configure() throws Exception {
-        
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JsonNullableModule());
  
          /**
-        GET /saga/createloan/loan : retrieves a loan
+        GET /saga/loan : retrieves an array of loan
         **/
         rest()
-            .get("/saga/createloan/loan")
+            .get("/saga/api/loan")
                 .description("retrieves a loan")
                 .id("getLoanApi")
                 .produces("application/json")
@@ -55,10 +50,10 @@ public class LoanRoute extends RouteBuilder {
                 .to("direct:searchLoans");
 
         /**
-        POST /saga/createloan/loan : adds a loan
+        POST /saga/loan : adds a loan
         **/
         rest()
-            .post("/saga/createloan/loan")
+            .post("/saga/api/loan")
                 .description("adds a loan")
                 .id("addLoanApi")
                 .consumes("application/json")
@@ -73,10 +68,10 @@ public class LoanRoute extends RouteBuilder {
                 .to("direct:addLoan");
 
         /**
-        DELETE /saga/createloan/loan : deletes a loan
+        DELETE /saga/loan : deletes a loan
         **/
         rest()
-            .delete("/saga/createloan/loan")
+            .delete("/saga/api/loan")
                 .description("deletes a loan")
                 .id("deleteLoanApi")
                 .consumes("application/json")
@@ -90,6 +85,29 @@ public class LoanRoute extends RouteBuilder {
                 .endParam()
                 .to("direct:deleteLoan");
 
+        from("direct:searchLoans")
+                .process( exchange -> {
+                    log.info("searchApplicants-> searchString: " + exchange.getIn().getHeader("searchString"));
+                    log.info("searchApplicants-> limit: " + exchange.getIn().getHeader("limit"));
+                    exchange.getMessage().setBody("this is a test");         // must return a body, otherwise 500                 
+                    exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);
+                })
+                .log("Search loans invoked...");           
+
+        from("direct:addLoan")
+                .process( exchange -> {
+                    Loan loan = (Loan) exchange.getIn().getBody(Loan.class);
+                    log.info("loan->id: " + loan.getId().toString() + 
+                             ", amount: " + loan.getAmount().toString() +
+                             ", applicantId: " + loan.getApplicantId().toString() +
+                             ", approved: " + loan.getApproved().toString() +
+                             ", loanRequestDate: " + loan.getLoanRequestDate().toString());  
+                    exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);                           
+                })
+                .log("Loan added...");    
+
+        from("direct:deleteLoan")
+                .log("invoked deleteLoan...");
     }
 
 

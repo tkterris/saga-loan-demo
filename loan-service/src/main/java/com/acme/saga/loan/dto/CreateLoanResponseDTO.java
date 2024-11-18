@@ -1,4 +1,4 @@
-package com.acme.saga.loandemo.dto;
+package com.acme.saga.loan.dto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -14,13 +14,13 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplicantDTO {
-
-    private Integer id;
-    private BigDecimal limit;
+public class CreateLoanResponseDTO {
+    
+    private Integer loanId;    
+    private BigDecimal requestAmount;
+    private Integer applicantId;
+    private Date loanCreationDate;
     private Boolean approved;
-    private Date limitUpdateDate;
-    private String applicantComment;
-    private String loanComment;
+    private String comment;
 
 }

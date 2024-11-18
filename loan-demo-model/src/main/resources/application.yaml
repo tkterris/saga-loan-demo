@@ -26,6 +26,6 @@ logging:
     org.springframework.security: debug
 # Server configuration
 server:
-  port: 8084
+  port: 8082
   servlet:
     context-path: /sagaloandemo/crud  
