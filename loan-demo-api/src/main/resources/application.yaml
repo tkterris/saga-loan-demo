@@ -5,8 +5,10 @@ camel:
       context-path: /loandemo/api/*  
   lra:
     enabled: true
-    coordinator-url: http://localhost:8080
-    local-participant-url: http://localhost:${server.port}/loandemo/api
+    coordinator-url: http://0.0.0.0:8080
+    coordinator-context-path: /lra-coordinator    
+    local-participant-url: http://0.0.0.0:8081/loandemo/api
+    local-participant-context-path: /lra-participant
   service:
     lra.enabled: true
   dataformat:

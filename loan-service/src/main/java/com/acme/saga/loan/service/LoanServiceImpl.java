@@ -73,7 +73,7 @@ public class LoanServiceImpl implements LoanService {
         responseHeaders.add("acme-loan-id", loan.getId().toString());
 
         createLoanResponse = CreateLoanResponseDTO.builder()
-                             .loanId(loan.getId())
+                             .loanId(lResponse.getBody().getId())
                              .requestAmount(loan.getAmount())
                              .applicantId(loan.getApplicantId())
                              .loanCreationDate(Date.from(Instant.now()))
@@ -82,6 +82,8 @@ public class LoanServiceImpl implements LoanService {
 
         ResponseEntity<CreateLoanResponseDTO> cResponse = new ResponseEntity<>(createLoanResponse, responseHeaders, HttpStatus.OK);
 
+        log.info("exiting createLoan, CreateLoanResponseDTO is: " + createLoanResponse.toString());
+        
         return cResponse;
 
     }

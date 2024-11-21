@@ -16,10 +16,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.component.gson.GsonDataFormat;
 import org.apache.camel.model.DataFormatDefinition;
 import org.apache.camel.CamelContext;
+import org.apache.camel.model.SagaPropagation;
 import org.apache.camel.component.jackson.JacksonConstants;
 import com.google.gson.FieldNamingPolicy;
 import lombok.extern.slf4j.Slf4j;
 import com.acme.saga.model.Loan;
+import com.acme.saga.dto.CreateLoanResponseDTO;
+import org.apache.camel.component.saga.SagaEndpoint;
+import java.util.HashMap;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -34,26 +39,17 @@ public class SagaRoute extends RouteBuilder {
     @Value("${saga-demo.applicant.update-limit.endpoint}")
     private String updateLimitEndpointURI;
 
-    //@Bean
-    // @Primary
-    // public Jackson2ObjectMapperBuilder customObjectMapper() {
-    //     return new Jackson2ObjectMapperBuilder()
-    //             // other configs are possible
-    //             .modules(new JsonNullableModule());
-    // }
+    // map of requestLoanId <String>, newLoanId <Integer>
+    private HashMap<String, Integer> inProcessLoans;
+
 
     @Override
     public void configure() throws Exception {
 
         log.info("starting SagaRoute configure...");
 
-        CamelContext context = getContext();
-
-        // Enable Jackson JSON type converter for more types.
-        context.getGlobalOptions().put("CamelJacksonEnableTypeConverter", "true");
-        // Allow Jackson JSON to convert to pojo types also
-        // (by default, Jackson only converts to String and other simple types)
-        context.getGlobalOptions().put("CamelJacksonTypeConverterToPojo", "true");
+        if(Objects.isNull(inProcessLoans))
+            inProcessLoans = new HashMap<String, Integer>();
 
         // entrypoint to saga route
         rest()
@@ -75,10 +71,19 @@ public class SagaRoute extends RouteBuilder {
         from("direct:saga")
             .log("entering saga route rest endpoint...")   
             .saga()
+                // if propagation is enabled, it causes a disconnect with LRA coordinator
+                //.propagation(SagaPropagation.SUPPORTS)            
+                .compensation("direct:deleteLoan")
+                //.compensation("direct:mockdelete")
+                .completion("direct:completeLoan")
+                .process( exchange -> {
+                    Loan loan = exchange.getIn().getBody(Loan.class);
+                    exchange.getIn().setHeader("originalLoan", loan.toString());
+                })
+                .option("originalLoanId", simple("${body.id}"))
                 .to("direct:addLoan")
                 .to("direct:updateLoanLimit")
-            .compensation("direct:deleteLoan")
-            .completion("direct:completeLoan")
+                //.to("direct:completeLoan")
             .setBody(header("Long-Running-Action"))
             .end();
 
@@ -88,27 +93,36 @@ public class SagaRoute extends RouteBuilder {
             .log("invoked addLoan endpoint...")
             .process( exchange -> {
                 Loan loan = (Loan) exchange.getIn().getBody(Loan.class);
+                log.info("loan request id: " + loan.getId().toString());
                 log.info("loan->id: " + loan.getId().toString() + 
                          ", amount: " + loan.getAmount().toString() +
                          ", applicantId: " + loan.getApplicantId().toString() +
                          ", approved: " + loan.getApproved().toString() +
                          ", loanRequestDate: " + loan.getLoanRequestDate().toString());  
                 exchange.setVariable("loanRequest", loan);
-                //org.apache.camel.TypeConverter tc = exchange.getContext().getTypeConverter();
-                //String str_value = tc.convertTo(String.class, exchange.getIn().getBody());
-                //exchange.getOut().setBody(loan);
-                exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);                           
+                exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);                      
             })
-            // setting up for creatLoan invocation
-            //.unmarshal().json(JsonLibrary.Jackson)
-           // .unmarshal().json(JsonLibrary.Jackson, Loan.class)
             .setHeader(Exchange.HTTP_METHOD, constant("POST")) // Set HTTP method
             .setHeader("Content-Type", constant("application/json")) // Set Content-Type header
-            //.unmarshal().json(JsonLibrary.Jackson)
             .convertBodyTo(String.class)
             .log("loan endpoint is: " + loanCreateEndpointURI)
             // re-use incoming body(type Loan)
             .to(loanCreateEndpointURI+"?bridgeEndpoint=true")
+            .process( exchange -> {
+                CreateLoanResponseDTO lResponse = exchange.getIn().getBody(CreateLoanResponseDTO.class);
+
+                log.info("createLoan DTO response: " + lResponse.toString());
+
+                // cache the in process loan
+                // will be needed in the event a failure occurs and compensate is triggered
+                inProcessLoans.put(exchange.getVariable("loanRequest", Loan.class).getId().toString(), lResponse.getLoanId());
+
+                log.info("new loan id: " + 
+                        lResponse.getLoanId().toString() + 
+                        " with reference loan id: " +
+                        exchange.getVariable("loanRequest", Loan.class).getId().toString() + 
+                        " added to inprocess cache...");
+            })
             .convertBodyTo(Loan.class)
             .log("Loan added...");    
 
@@ -116,26 +130,54 @@ public class SagaRoute extends RouteBuilder {
         // delete loan just takes id in the path, no body
         // returns ResponseEntity<DeleteLoanResponseDTO>
         from("direct:deleteLoan")
-        .log("invoking deleteLoan...")
-        .process( exchange -> {
-            exchange.getIn().setBody(exchange.getVariable("loanRequest", Loan.class));
-            Loan loan = (Loan) exchange.getIn().getBody(Loan.class);
-            log.info("loan->id: " + loan.getId().toString() + 
-                     ", amount: " + loan.getAmount().toString() +
-                     ", applicantId: " + loan.getApplicantId().toString() +
-                     ", approved: " + loan.getApproved().toString() +
-                     ", loanRequestDate: " + loan.getLoanRequestDate().toString());  
-            exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);                           
-        })
-        .setHeader(Exchange.HTTP_METHOD, constant("DELETE")) // Set HTTP method
-        .setHeader("Content-Type", constant("application/json")) // Set Content-Type header
-        //.unmarshal().json(JsonLibrary.Jackson)
-        .convertBodyTo(String.class)
-        .log("deleteLoan endpoint is: " + deleteLoanEndpointURI)
-        // re-use incoming body(type Loan)
-        .to(deleteLoanEndpointURI+"?bridgeEndpoint=true")
-        .convertBodyTo(Loan.class)  
-        .log("invoked deleteLoan...");
+            .log("invoking deleteLoan...")
+            // add current loan to list of unfinished loans
+            .process( exchange -> {
+
+                String originalLoanId = exchange.getIn().getHeader("originalLoanId").toString();
+
+                log.info("Deleting loan with id: " + originalLoanId);
+
+                //log.info("Deleting loan with id: " + exchange.getVariable("loanRequest", Loan.class).getId().toString());
+                log.info("Retrieving loan from inProcess cache...");
+                Integer loanId = inProcessLoans.get(originalLoanId);     // retrieve loan from inprocess cache
+
+                //exchange.getIn().setHeader("loanIdNew", exchange.getVariable("loanIdNew", String.class));
+                //exchange.getIn().setHeader("loanIdNew", loanId);
+                exchange.getMessage().setHeader("loanIdNew", loanId);
+                exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);                           
+            })
+            .setHeader(Exchange.HTTP_METHOD, constant("DELETE")) // Set HTTP method
+            // DELETE request has NO response BODY 
+            // this is probably throwing off LRA
+            .setHeader("Content-Type", constant("application/json")) // Set Content-Type header
+            // .convertBodyTo(String.class)
+            // re-use incoming body(type Loan)
+            .toD(deleteLoanEndpointURI + "/" + "${header.loanIdNew}" + "?bridgeEndpoint=true")            
+            // per Rob --- .setHeader(Exchange.HTTP_URI, simple(deleteLoanEndpointURI + "/" + "${header.loanIdNew}"))
+            // per Rob --- .to("http://set-by-header?bridgeEndpoint=true")
+            .setBody(simple("deletion successful"))
+
+            // .convertBodyTo(Loan.class)  
+            // remove from list of unfinished loans
+
+
+            // .process( exchange -> {
+            //     String originalLoanId = exchange.getIn().getHeader("originalLoanId").toString();
+
+            //     log.info("removing loan id: " + originalLoanId + " from inprocess cache");
+                
+            //     inProcessLoans.remove(originalLoanId);
+                
+            //     log.info("loan with reference id: " +
+            //         originalLoanId + 
+            //         " and loan id: " +
+            //         exchange.getIn().getHeader("loanIdNew", String.class) +
+            //         " removed from inprocess cache...");                
+
+            //     exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);      
+            // })
+            .log("deleteLoan invocation completed successfully...");
 
         // updateloanlimit takes loan as body
         // returns UpdateLimitResponseDTO
@@ -144,6 +186,8 @@ public class SagaRoute extends RouteBuilder {
             .process( exchange -> {
                 exchange.getIn().setBody(exchange.getVariable("loanRequest", Loan.class));
                 Loan loan = (Loan) exchange.getIn().getBody(Loan.class);
+                log.info("loan request id: " + loan.getId().toString());
+                //Loan loan = (Loan) exchange.getIn().getBody(Loan.class);
                 log.info("loan->id: " + loan.getId().toString() + 
                          ", amount: " + loan.getAmount().toString() +
                          ", applicantId: " + loan.getApplicantId().toString() +
@@ -153,7 +197,6 @@ public class SagaRoute extends RouteBuilder {
             })
             .setHeader(Exchange.HTTP_METHOD, constant("PUT")) // Set HTTP method
             .setHeader("Content-Type", constant("application/json")) // Set Content-Type header
-            //.unmarshal().json(JsonLibrary.Jackson)
             .convertBodyTo(String.class)
             .log("updateLoanLimit endpoint is: " + updateLimitEndpointURI)
             // re-use incoming body(type Loan)
@@ -162,10 +205,12 @@ public class SagaRoute extends RouteBuilder {
             .log("invoked updateLoanLimit...");
 
         from("direct:completeLoan")
-            .transform().header(Exchange.SAGA_LONG_RUNNING_ACTION)
             .log("Saga loan process has completed...");
 
+        from("direct:mockdelete")
+            .log("Saga loan mock deletion...");
     }
+
 
     @Bean
     CamelContextConfiguration contextConfiguration() {
