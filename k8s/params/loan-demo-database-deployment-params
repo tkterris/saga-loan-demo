@@ -1,0 +1,2 @@
+DATABASE_SERVICE_NAME=
+IMAGE_PULL_SPEC=quay.io/abryson/postgresql-amd64-alpine:latest
