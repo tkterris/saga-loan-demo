@@ -1,6 +1,9 @@
 #!/bin/bash
 
-echo running amq broker and lra-coordinator
+echo running lra-coordinator
+
+# might be 50000
+podman run -p 8080:8080
 docker compose -f local-resources/compose.yaml up -d
 
 echo compiling project

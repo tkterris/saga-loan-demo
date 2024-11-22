@@ -22,13 +22,15 @@ public class LoanController {
 
     @Autowired private LoanService loanService;
 
+
     @PostMapping(path = "/createloan", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CreateLoanResponseDTO> createLoan( @RequestBody Loan loan ) {
         return loanService.createLoan( loan );
     }
 
 
-    @DeleteMapping( path="/deleteloan/{id}", produces = MediaType.APPLICATION_JSON_VALUE )
+    //@DeleteMapping( path="/deleteloan/{id}", produces = MediaType.APPLICATION_JSON_VALUE )
+    @PostMapping(path = "/deleteloan/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DeleteLoanResponseDTO> deleteLoan( @PathVariable( "id" ) Integer Id ) {
         return loanService.deleteLoan( Id );
     } 

@@ -1,5 +1,6 @@
 package com.acme.saga.loan;
 
+import com.acme.saga.loan.configuration.YamlProperties.java;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

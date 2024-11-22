@@ -40,6 +40,7 @@ public class SagaRoute extends RouteBuilder {
     private String updateLimitEndpointURI;
 
     // map of requestLoanId <String>, newLoanId <Integer>
+    // need a cache for cross referencing reference loan id vs created loan id on callback from lra
     private HashMap<String, Integer> inProcessLoans;
 
 
@@ -71,10 +72,8 @@ public class SagaRoute extends RouteBuilder {
         from("direct:saga")
             .log("entering saga route rest endpoint...")   
             .saga()
-                // if propagation is enabled, it causes a disconnect with LRA coordinator
-                //.propagation(SagaPropagation.SUPPORTS)            
+                // if propagation is enabled, it causes a disconnect with LRA coordinator          
                 .compensation("direct:deleteLoan")
-                //.compensation("direct:mockdelete")
                 .completion("direct:completeLoan")
                 .process( exchange -> {
                     Loan loan = exchange.getIn().getBody(Loan.class);
@@ -83,7 +82,6 @@ public class SagaRoute extends RouteBuilder {
                 .option("originalLoanId", simple("${body.id}"))
                 .to("direct:addLoan")
                 .to("direct:updateLoanLimit")
-                //.to("direct:completeLoan")
             .setBody(header("Long-Running-Action"))
             .end();
 
@@ -137,46 +135,21 @@ public class SagaRoute extends RouteBuilder {
                 String originalLoanId = exchange.getIn().getHeader("originalLoanId").toString();
 
                 log.info("Deleting loan with id: " + originalLoanId);
-
-                //log.info("Deleting loan with id: " + exchange.getVariable("loanRequest", Loan.class).getId().toString());
                 log.info("Retrieving loan from inProcess cache...");
                 Integer loanId = inProcessLoans.get(originalLoanId);     // retrieve loan from inprocess cache
 
-                //exchange.getIn().setHeader("loanIdNew", exchange.getVariable("loanIdNew", String.class));
-                //exchange.getIn().setHeader("loanIdNew", loanId);
                 exchange.getMessage().setHeader("loanIdNew", loanId);
                 exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);                           
             })
-            .setHeader(Exchange.HTTP_METHOD, constant("DELETE")) // Set HTTP method
+            .setHeader(Exchange.HTTP_METHOD, constant("POST")) // Set HTTP method
             // DELETE request has NO response BODY 
             // this is probably throwing off LRA
             .setHeader("Content-Type", constant("application/json")) // Set Content-Type header
-            // .convertBodyTo(String.class)
-            // re-use incoming body(type Loan)
             .toD(deleteLoanEndpointURI + "/" + "${header.loanIdNew}" + "?bridgeEndpoint=true")            
             // per Rob --- .setHeader(Exchange.HTTP_URI, simple(deleteLoanEndpointURI + "/" + "${header.loanIdNew}"))
             // per Rob --- .to("http://set-by-header?bridgeEndpoint=true")
+            // per Rob --- toD is inefficient.  it creates a 2nd endpoint handler
             .setBody(simple("deletion successful"))
-
-            // .convertBodyTo(Loan.class)  
-            // remove from list of unfinished loans
-
-
-            // .process( exchange -> {
-            //     String originalLoanId = exchange.getIn().getHeader("originalLoanId").toString();
-
-            //     log.info("removing loan id: " + originalLoanId + " from inprocess cache");
-                
-            //     inProcessLoans.remove(originalLoanId);
-                
-            //     log.info("loan with reference id: " +
-            //         originalLoanId + 
-            //         " and loan id: " +
-            //         exchange.getIn().getHeader("loanIdNew", String.class) +
-            //         " removed from inprocess cache...");                
-
-            //     exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, 200);      
-            // })
             .log("deleteLoan invocation completed successfully...");
 
         // updateloanlimit takes loan as body
@@ -187,7 +160,6 @@ public class SagaRoute extends RouteBuilder {
                 exchange.getIn().setBody(exchange.getVariable("loanRequest", Loan.class));
                 Loan loan = (Loan) exchange.getIn().getBody(Loan.class);
                 log.info("loan request id: " + loan.getId().toString());
-                //Loan loan = (Loan) exchange.getIn().getBody(Loan.class);
                 log.info("loan->id: " + loan.getId().toString() + 
                          ", amount: " + loan.getAmount().toString() +
                          ", applicantId: " + loan.getApplicantId().toString() +
@@ -207,8 +179,6 @@ public class SagaRoute extends RouteBuilder {
         from("direct:completeLoan")
             .log("Saga loan process has completed...");
 
-        from("direct:mockdelete")
-            .log("Saga loan mock deletion...");
     }
 
 
