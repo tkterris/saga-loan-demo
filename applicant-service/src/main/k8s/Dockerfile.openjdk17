@@ -2,13 +2,10 @@ FROM registry.redhat.io/ubi9/openjdk-17-runtime:1.20
 
 ENV JAVA_OPTIONS -Xmx512m
 
-EXPOSE 8080/tcp
+EXPOSE 8083/tcp
 
+WORKDIR /app
 
-USER $UID
+ADD target/applicantService*.jar /app/applicant-service.jar
 
-WORKDIR /home/default
-
-ADD target/*.jar /deployments/
-
-CMD ["/opt/jboss/container/java/run/run-java.sh"]
+CMD ["java", "-jar", "/app/applicant-service.jar"]

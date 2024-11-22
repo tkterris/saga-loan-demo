@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: saga-applicant-service
+    app.kubernetes.io/component: saga-applicant-service
+    app.kubernetes.io/instance: saga-applicant-service
+    app.kubernetes.io/name: saga-applicant-service
+    app.kubernetes.io/part-of: saga-applicant-service-app
+  name: saga-applicant-service
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: saga-applicant-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: saga-applicant-service
+        deployment: saga-applicant-service
+    spec:
+      containers:
+      - image: quay.io/bwheatley/saga/saga-applicant-service:latest
+        imagePullPolicy: Always
+        name: saga-applicant-service
+        ports:
+        - containerPort: 8083
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      imagePullSecrets:
+        - name: my-pull-secret
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
