@@ -1,0 +1,21 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: saga-applicant-service
+    app.kubernetes.io/component: saga-applicant-service
+    app.kubernetes.io/instance: saga-applicant-service
+    app.kubernetes.io/name: saga-applicant-service
+    app.openshift.io/runtime-version: latest
+  name: saga-applicant-service
+spec:
+  port:
+    targetPort: 8083-tcp
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: saga-applicant-service
+    weight: 100
+  wildcardPolicy: None

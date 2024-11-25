@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: saga-applicant-service
+    app.kubernetes.io/instance: saga-applicant-service
+    app.kubernetes.io/name: saga-applicant-service
+    app.openshift.io/runtime-version: latest
+  name: saga-applicant-service
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: 8083-tcp
+    port: 8083
+    protocol: TCP
+    targetPort: 8083
+  selector:
+    app: saga-applicant-service
+    deployment: saga-applicant-service
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
