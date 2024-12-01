@@ -2,16 +2,20 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    template.openshift.io/expose-uri: postgres://{.spec.clusterIP}:{.spec.ports[?(.name=="postgresql")].port}
-  name: ${DATABASE_SERVICE_NAME}
+#    template.openshift.io/expose-uri: postgres://{.spec.clusterIP}:{.spec.ports[?(.name=="postgresql")].port}
+  name: loan-demo-database
 spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
   ports:
-  - name: postgresql
+  - name: 5432-tcp
     nodePort: 0
     port: 5432
     protocol: TCP
     targetPort: 5432
   selector:
-    name: ${DATABASE_SERVICE_NAME}
+    app.kubernetes.io/name: loan-demo-database
   sessionAffinity: None
   type: ClusterIP

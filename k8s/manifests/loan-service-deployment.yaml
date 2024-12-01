@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: loan-service
+    app.kubernetes.io/component: loan-service
+    app.kubernetes.io/instance: loan-service
+    app.kubernetes.io/name: loan-service
+    app.kubernetes.io/part-of: loan-service-app
+  name: loan-service
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: loan-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: loan-service
+        deployment: loan-service
+    spec:
+      containers:
+      - env:
+        - name: SPRING_CONFIG_LOCATION
+          value: "file:///app/application.yaml"
+        image: quay.io/abryson/loan-demo-loan-service:0.0.1-SNAPSHOT_8518810
+        imagePullPolicy: Always
+        name: loan-service
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: loan-service
+          mountPath: /app/application.yaml
+          subPath: application.yaml
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      volumes:
+        - name: loan-service
+          configMap:
+            name: loan-service
+      imagePullSecrets:
+        - name: quayio
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler

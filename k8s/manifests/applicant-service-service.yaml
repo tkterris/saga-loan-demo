@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: applicant-service
+    app.kubernetes.io/instance: applicant-service
+    app.kubernetes.io/name: applicant-service
+    app.openshift.io/runtime-version: latest
+  name: applicant-service
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: 8080-tcp
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: applicant-service
+    deployment: applicant-service
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

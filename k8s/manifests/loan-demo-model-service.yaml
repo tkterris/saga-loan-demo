@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: loan-demo-model
+    app.kubernetes.io/instance: loan-demo-model
+    app.kubernetes.io/name: loan-demo-model
+    app.openshift.io/runtime-version: latest
+  name: loan-demo-model
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: 8080-tcp
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: loan-demo-model
+    deployment: loan-demo-model
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

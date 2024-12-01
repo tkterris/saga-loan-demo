@@ -1,2 +1,0 @@
-DATABASE_SERVICE_NAME=loan-demo-database
-VOLUME_CAPACITY=20Gi

@@ -1,2 +1,4 @@
-DATABASE_SERVICE_NAME=
+DATABASE_SERVICE_NAME=loan-demo-database
 IMAGE_PULL_SPEC=quay.io/abryson/postgresql-amd64-alpine:latest
+DATABASE_DATA=/temp/data
+MEMORY_LIMIT=2Gi

@@ -1,43 +1,51 @@
-apiVersion: v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-  name: ${DATABASE_SERVICE_NAME}
+  labels:
+    app: saga-loan-demo  
+  name: loan-demo-database
+  namespace: saga-loan-demo
 spec:
   replicas: 1
   selector:
-    name: ${DATABASE_SERVICE_NAME}
+    matchLabels:
+      app.kubernetes.io/name: loan-demo-database
   strategy:
       type: Recreate
   template:
     metadata:
-      labels:
-      name: ${DATABASE_SERVICE_NAME}
+      labels: 
+        app.kubernetes.io/name: loan-demo-database
+      name: loan-demo-database
     spec:
       containers:
       - env:
-        - name: POSTGRESQL_USER
+        - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
               key: database-user
-              name: ${DATABASE_SERVICE_NAME}
-        - name: POSTGRESQL_PASSWORD
+              name: loan-demo-database
+        - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               key: database-password
-              name: ${DATABASE_SERVICE_NAME}
-        - name: POSTGRESQL_DATABASE
+              name: loan-demo-database
+        - name: POSTGRES_DATABASE
           valueFrom:
             secretKeyRef:
               key: database-name
-              name: ${DATABASE_SERVICE_NAME}
-        image: ${IMAGE_PULL_SPEC}
+              name: loan-demo-database
+        - name: PGDATA
+          valueFrom:
+            secretKeyRef:
+              key: database-data
+              name: loan-demo-database
+        image: quay.io/abryson/postgresql-amd64-alpine:latest
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
             command:
-            - /usr/libexec/check-container
-            - --live
+            - '/usr/local/bin/pg_isready -U "postgres" -h 127.0.0.1 -p 5432'
           initialDelaySeconds: 120
           timeoutSeconds: 10
         name: postgresql
@@ -47,22 +55,22 @@ spec:
         readinessProbe:
           exec:
             command:
-            - /usr/libexec/check-container
-          initialDelaySeconds: 5
-          timeoutSeconds: 1
+            - '/usr/local/bin/pg_isready -U "postgres" -h 127.0.0.1 -p 5432'
+          initialDelaySeconds: 15
+          timeoutSeconds: 2
         resources:
           limits:
-            memory: ${MEMORY_LIMIT}
+            memory: 2Gi
         securityContext:
           capabilities: {}
           privileged: false
         terminationMessagePath: /dev/termination-log
         volumeMounts:
-        - mountPath: "${DATABASE_DATA}"
-          name: ${DATABASE_SERVICE_NAME}-data
+        - mountPath: "/temp/data"
+          name: loan-demo-database-data
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       volumes:
-      - name: ${DATABASE_SERVICE_NAME}-data
+      - name: loan-demo-database-data
         persistentVolumeClaim:
-          claimName: ${DATABASE_SERVICE_NAME}
+          claimName: loan-demo-database
