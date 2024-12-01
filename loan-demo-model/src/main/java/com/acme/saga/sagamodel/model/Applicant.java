@@ -16,7 +16,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @Entity
-@Table(name = "applicant")
+@Table(name = "applicant", schema = "sagademo")
 @Data
 @RequiredArgsConstructor
 public class Applicant implements Serializable {

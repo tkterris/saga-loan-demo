@@ -1,0 +1,6 @@
+server:
+  port: 8443
+  ssl:
+    key-store: /Users/abryson/development/clients/freddie_mac/research/openapi/saga-loan-demo/api-gateway/ssl/sagademo-keystore.p12
+    key-store-password: sagademo
+    key-store-type: PKCS12

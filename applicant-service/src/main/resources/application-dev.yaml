@@ -1,0 +1,18 @@
+applicant:
+  get:
+    endpoint: "http://localhost:8080/sagaloandemo/crud/applicant"
+  update:
+    endpoint: "http://localhost:8080/sagaloandemo/crud/applicant"
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.springframework.security: debug
+
+server:
+  port: 8080
+  servlet:
+    context-path: /sagaloandemo/applicant

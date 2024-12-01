@@ -23,6 +23,9 @@ saga-demo:
   applicant:
     update-limit:
       endpoint: "http://localhost:8083/sagaloandemo/applicant/updateloanlimit"
+  saga:
+    route:
+      endpoint: "direct:saga"
 # Logger configuration
 logging:
   pattern:

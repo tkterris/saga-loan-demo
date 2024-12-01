@@ -16,7 +16,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @Entity
-@Table(name = "loan")
+@Table(name = "loan", schema = "sagademo")
 @Data
 @RequiredArgsConstructor
 public class Loan implements Serializable {
