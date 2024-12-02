@@ -13,5 +13,5 @@ spec:
             name: applicant-service
             port:
               number: 8080
-        path: /sagaloandemo/applicant/updateloanlimit
+        path: /updateloanlimit
         pathType: Prefix

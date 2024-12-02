@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: api-gateway
+    app.kubernetes.io/instance: api-gateway
+    app.kubernetes.io/name: api-gateway
+    app.openshift.io/runtime-version: latest
+  name: api-gateway
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: 8443-tcp
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: api-gateway
+    deployment: api-gateway
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

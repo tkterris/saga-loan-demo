@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: create-loan
+    app.kubernetes.io/instance: create-loan
+    app.kubernetes.io/name: create-loan
+    app.openshift.io/runtime-version: latest
+  name: create-loan
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: 8080-tcp
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: create-loan
+    deployment: create-loan
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
