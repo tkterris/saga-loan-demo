@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: saga-loan-demo
+
+resources:
+- saga-loan-demo-namespace.yaml
+- api-gateway-configmap.yaml
+- applicant-service-configmap.yaml
+- create-loan-configmap.yaml
+- loan-demo-model-configmap.yaml
+- loan-service-configmap.yaml
+- init-db-auth-secret.yaml
+- init-db-secret.yaml
+- loan-demo-database-secret.yaml
+- api-gateway-tls-cert-secret.yaml
+- loan-demo-database-pvc.yaml
+- lra-coordinator-pvc.yaml
+- api-gateway-deployment.yaml
+- applicant-service-deployment.yaml
+- loan-service-deployment.yaml
+- lra-coordinator-deployment.yaml
+- create-loan-deployment.yaml
+- applicant-service-service.yaml
+- create-loan-service.yaml
+- loan-demo-database-service.yaml
+- loan-demo-model-service.yaml
+- loan-service-service.yaml
+- lra-coordinator-service.yaml
+- applicant-service-ingress.yaml
+- create-loan-ingress.yaml
+- loan-demo-model-ingress.yaml
+- loan-service-ingress.yaml
+- lra-coordinator-ingress.yaml
+
+
+
+
