@@ -4,3 +4,9 @@ server:
     key-store: /Users/abryson/development/clients/freddie_mac/research/openapi/saga-loan-demo/api-gateway/ssl/sagademo-keystore.p12
     key-store-password: sagademo
     key-store-type: PKCS12
+spring:
+  security:
+    csrf:
+      enabled: false
+gateway:
+  endpoint: "http://create-loan.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com"

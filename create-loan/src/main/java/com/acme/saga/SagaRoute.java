@@ -53,20 +53,20 @@ public class SagaRoute extends RouteBuilder {
             inProcessLoans = new HashMap<String, Integer>();
 
         // entrypoint to saga route
-        // rest()
-        //     .post("/saga/route")
-        //         .description("creates a loan")
-        //         .id("createLoanApi")
-        //         .consumes("application/json")
-        //         .produces("application/json")
-        //         .type(Loan.class)       
-        //         .param()
-        //             .name("loan")
-        //             .type(RestParamType.body)
-        //             .required(false)
-        //             .description("Loan to add")
-        //         .endParam()
-                // .to("direct:saga");
+        rest()
+            .post("/saga/route")
+                .description("creates a loan")
+                .id("createLoanApi")
+                .consumes("application/json")
+                .produces("application/json")
+                .type(Loan.class)       
+                .param()
+                    .name("loan")
+                    .type(RestParamType.body)
+                    .required(false)
+                    .description("Loan to add")
+                .endParam()
+                .to("direct:saga");
 
         // saga implementation for create loan
         from("direct:saga")

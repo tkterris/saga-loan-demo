@@ -13,9 +13,8 @@ import com.acme.saga.exception.SagaInvocationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Value;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.CamelExecutionException;
 import lombok.extern.slf4j.Slf4j;
@@ -24,14 +23,23 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class CreateLoanServiceImpl implements CreateLoanService {
 
+    private RestTemplate restTemplate;
+
+    /**
+     *  this should be the rest dsl endpoint for the route
+     */
     @Value("${saga-demo.saga.route.endpoint}")
     private String sagaRouteEndpointURI;
 
     /**
-     * Inject Camel producer to use camel-geocoder to find location where we are
+     * 
+     * Service needs to forward to the rest dsl listener for saga
+     *  POST request
+     *    with Loan in body
+     * 
      */
-    @EndpointInject(value = "direct:saga")
-    private FluentProducerTemplate producerTemplate;
+
+
 
     /**
      * 
@@ -42,6 +50,9 @@ public class CreateLoanServiceImpl implements CreateLoanService {
     public ResponseEntity<CreateLoanResponseDTO> createLoan( Loan loan ) 
             throws SagaInvocationException {
 
+
+        if( Objects.isNull(restTemplate))
+            this.restTemplate = new RestTemplate();
 
         ResponseEntity<Loan> lResponse = null;
         CreateLoanResponseDTO createLoanResponse = null;
@@ -104,19 +115,13 @@ public class CreateLoanServiceImpl implements CreateLoanService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
         HttpEntity<Loan> requestEntity = new HttpEntity<>(loan, headers);
-
-        ResponseEntity<Loan> response = producerTemplate
-                                            .withBodyAs( loan, Loan.class )
-                                            .withHeader("Content-Type", "application/json")
-                                            .request();
-
         
-        // ResponseEntity<Loan> response = restTemplate.exchange(
-        //     sagaRouteEndpointURI, // CRUD update API endpoint
-        //     HttpMethod.POST,
-        //     requestEntity,
-        //     Loan.class
-        // );        
+        ResponseEntity<Loan> response = this.restTemplate.exchange(
+            sagaRouteEndpointURI, // CRUD update API endpoint
+            HttpMethod.POST,
+            requestEntity,
+            Loan.class
+        );        
 
         if(Objects.nonNull(response))
             log.info("createLoan: successful creation of loan with ID: " + loan.getId().toString());

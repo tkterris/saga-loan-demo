@@ -4,11 +4,10 @@ ENV JAVA_OPTIONS -Xmx512m
 
 EXPOSE 8080/tcp
 
-
 USER $UID
 
 WORKDIR /app
 
-ADD target/createLoan*.jar /app/create-loan.jar
+ADD target/sagaApiGateway*.jar /app/api-gateway.jar
 
-CMD ["java", "-jar", "/app/create-loan.jar"]
+CMD ["java", "-jar", "/app/api-gateway.jar"]

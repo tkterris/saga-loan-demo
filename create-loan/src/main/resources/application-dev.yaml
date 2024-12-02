@@ -1,0 +1,40 @@
+camel:
+  servlet:
+    mapping:
+      enabled: true
+      context-path: /
+  lra:
+    enabled: true
+    coordinator-url: http://lra-coordinator.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/lra-coordinator
+    coordinator-context-path: /lra-coordinator    
+    local-participant-url: http://create-loan.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/createLoan
+    local-participant-context-path: /lra-participant
+  service:
+    lra.enabled: true
+  dataformat:
+    json-jackson:
+      auto-discover-object-mapper: true    
+saga-demo:
+  loan:
+    create:
+      endpoint: "http://loan-service.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/createloan"
+    delete:
+      endpoint: "http://loan-service.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/deleteloan"
+  applicant:
+    update-limit:
+      endpoint: "http://applicant-service.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/updateloanlimit"
+  saga:
+    route:
+      endpoint: "http://create-loan.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/saga/route"
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.springframework.security: debug
+# server configuration
+server:
+  port: 8080
+#servlet:
+#    context-path: /loandemo/api

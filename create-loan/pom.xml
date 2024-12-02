@@ -8,10 +8,10 @@
     	<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<groupId>com.acme.saga</groupId>
-	<artifactId>loanDemoApi</artifactId>
+	<artifactId>createLoan</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>saga-loan-demo-api</name>
-	<description>Saga loan demo- - api</description>
+	<name>create-loan</name>
+	<description>Saga loan demo - create loan</description>
 	<properties>
 		<java.version>17</java.version>
 		<camel.version>4.8.1</camel.version>

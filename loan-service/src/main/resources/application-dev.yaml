@@ -1,8 +1,8 @@
 loan:
   create:
-    endpoint: "http://localhost:8080/sagaloandemo/crud/loan"
+    endpoint: "http://loan-demo-model.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/sagaloandemo/crud/loan"
   delete:
-    endpoint: "http://localhost:8080/sagaloandemo/crud/loan"
+    endpoint: "http://loan-demo-model.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/sagaloandemo/crud/loan"
 
 # Logger configuration
 logging:
@@ -15,4 +15,4 @@ logging:
 server:
   port: 8080
   servlet:
-    context-path: /sagaloandemo/loan
+    context-path: /
