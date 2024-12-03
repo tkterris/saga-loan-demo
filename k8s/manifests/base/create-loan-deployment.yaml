@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: create-loan
     app.kubernetes.io/part-of: create-loan-app
   name: create-loan
+  namespace: saga-loan-demo
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -30,7 +31,7 @@ spec:
       - env:
         - name: SPRING_CONFIG_LOCATION
           value: "file:///app/application.yaml"
-        image: quay.io/abryson/create-loan:0.0.1-SNAPSHOT_8518810
+        image: create-loan
         imagePullPolicy: Always
         name: create-loan
         ports:

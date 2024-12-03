@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: api-gateway
     app.kubernetes.io/part-of: api-gateway-app
   name: api-gateway
+  namespace: saga-loan-demo
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -30,7 +31,7 @@ spec:
       - env:
         - name: SPRING_CONFIG_LOCATION
           value: "file:///app/application.yaml"
-        image: quay.io/abryson/api-gateway:0.0.1-SNAPSHOT_8518810
+        image: api-gateway
         imagePullPolicy: Always
         name: api-gateway
         ports:

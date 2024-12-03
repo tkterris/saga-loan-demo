@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: lra-coordinator
     app.kubernetes.io/part-of: lra-coordinator-app
   name: lra-coordinator
+  namespace: saga-loan-demo
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -27,7 +28,7 @@ spec:
         deployment: lra-coordinator
     spec:
       containers:
-      - image: quay.io/abryson/lra-coordinator-quarkus-jvm:latest
+      - image: lra-coordinator
         imagePullPolicy: Always
         name: lra-coordinator
         ports:

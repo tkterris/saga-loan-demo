@@ -40,24 +40,12 @@ spec:
             secretKeyRef:
               key: database-data
               name: loan-demo-database
-        image: quay.io/abryson/postgresql-amd64-alpine:latest
+        image: postgres-db
         imagePullPolicy: IfNotPresent
-        livenessProbe:
-          exec:
-            command:
-            - '/usr/local/bin/pg_isready -U "postgres" -h 127.0.0.1 -p 5432'
-          initialDelaySeconds: 120
-          timeoutSeconds: 10
         name: postgresql
         ports:
         - containerPort: 5432
           protocol: TCP
-        readinessProbe:
-          exec:
-            command:
-            - '/usr/local/bin/pg_isready -U "postgres" -h 127.0.0.1 -p 5432'
-          initialDelaySeconds: 15
-          timeoutSeconds: 2
         resources:
           limits:
             memory: 2Gi
@@ -66,11 +54,16 @@ spec:
           privileged: false
         terminationMessagePath: /dev/termination-log
         volumeMounts:
-        - mountPath: "/temp/data"
-          name: loan-demo-database-data
+          - name: db-init-scripts
+            mountPath: /docker-entrypoint-initdb.d/
+          - mountPath: "/temp/data"
+            name: loan-demo-database-data
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       volumes:
       - name: loan-demo-database-data
         persistentVolumeClaim:
           claimName: loan-demo-database
+      - name: db-init-scripts
+        secret:
+          secretName: init-db-secret

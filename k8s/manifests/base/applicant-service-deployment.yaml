@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: applicant-service
     app.kubernetes.io/part-of: applicant-service-app
   name: applicant-service
+  namespace: saga-loan-demo
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -30,7 +31,7 @@ spec:
       - env:
         - name: SPRING_CONFIG_LOCATION
           value: "file:///app/application.yaml"
-        image: quay.io/abryson/loan-demo-applicant-service:0.0.1-SNAPSHOT_8518810
+        image: applicant-service
         imagePullPolicy: Always
         name: applicant-service
         ports:

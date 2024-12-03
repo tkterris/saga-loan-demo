@@ -7,6 +7,7 @@ metadata:
     app.kubernetes.io/name: loan-demo-model
     app.openshift.io/runtime-version: latest
   name: loan-demo-model
+  namespace: saga-loan-demo
 spec:
   internalTrafficPolicy: Cluster
   ports:

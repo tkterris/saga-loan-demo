@@ -2,6 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: loan-demo-database
+  namespace: saga-loan-demo
 spec:
   accessModes:
   - ReadWriteOnce

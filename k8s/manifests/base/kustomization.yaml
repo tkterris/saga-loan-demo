@@ -20,6 +20,8 @@ resources:
 - loan-service-deployment.yaml
 - lra-coordinator-deployment.yaml
 - create-loan-deployment.yaml
+- loan-demo-model-deployment.yaml
+- loan-demo-database-deployment.yaml
 - applicant-service-service.yaml
 - create-loan-service.yaml
 - loan-demo-database-service.yaml
@@ -32,6 +34,27 @@ resources:
 - loan-service-ingress.yaml
 - lra-coordinator-ingress.yaml
 
-
+images:
+- name: api-gateway
+  newName: quay.io/tterris/saga-demo/api-gateway
+  newTag: latest
+- name: applicant-service
+  newName: quay.io/tterris/saga-demo/applicant-service
+  newTag: latest
+- name: create-loan
+  newName: quay.io/tterris/saga-demo/create-loan
+  newTag: latest
+- name: loan-demo-model
+  newName: quay.io/tterris/saga-demo/loan-demo-model
+  newTag: latest
+- name: loan-service
+  newName: quay.io/tterris/saga-demo/loan-service
+  newTag: latest
+- name: lra-coordinator
+  newName: quay.io/jbosstm/lra-coordinator
+  newTag: latest
+- name: postgres-db
+  newName: docker.io/postgres
+  newTag: latest
 
 
