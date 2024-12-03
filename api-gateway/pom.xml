@@ -10,7 +10,6 @@
 
 	<groupId>com.acme.gateway</groupId>
 	<artifactId>sagaApiGateway</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>		
 	<name>saga-api-gateway</name>
 	<description>Saga loan demo - api gateway</description>
