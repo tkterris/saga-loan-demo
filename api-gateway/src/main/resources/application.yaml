@@ -1,12 +1,26 @@
 server:
   port: 8443
   ssl:
-    key-store: /Users/abryson/development/clients/freddie_mac/research/openapi/saga-loan-demo/api-gateway/ssl/sagademo-keystore.p12
+    key-store: ./ssl/sagademo.jks
     key-store-password: sagademo
-    key-store-type: PKCS12
+    key-alias: sagademo
+    key-store-type: JKS
+  servlet:
+    context-path: /apigateway
 spring:
   security:
     csrf:
       enabled: false
+# disable csrf for testing
+security.enable-csrf: false      
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.springframework.security: debug      
+# url of the entrypoint to the saga route
 gateway:
-  endpoint: "http://create-loan.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com"
+  endpoint: "http://localhost:8084/loandemo/api/saga/route"

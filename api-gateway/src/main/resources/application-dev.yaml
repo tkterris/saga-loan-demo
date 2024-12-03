@@ -10,4 +10,4 @@ spring:
     csrf:
       enabled: false
 gateway:
-  endpoint: "http://create-loan.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com"
+  endpoint: "http://create-loan.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/createLoan"

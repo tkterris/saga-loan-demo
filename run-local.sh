@@ -1,7 +1,10 @@
 #!/bin/bash
 
+echo
 echo  "You must have a local instance of postgresql running AND"
+echo
 echo  "you must have the sagademo database / schema provisioned"
+echo
 echo  "see saga-loan-demo/loan-demo-model/src/main/resources/sql/postgresql/*.sql"
 
 
@@ -11,6 +14,8 @@ echo running lra-coordinator
 
 # might be 50000
 podman run --cidfile lra-coordinator.cid --detach -p 8080:8080 quay.io/abryson/lra-coordinator-quarkus-jvm:latest
+
+echo "NOTE: to view the lra-coorindator log issue command: <\podman logs -f \$(\cat \lra-coordinator.cid)>"
 
 #echo compiling project
 #mvn clean package

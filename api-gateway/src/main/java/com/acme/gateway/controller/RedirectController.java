@@ -1,7 +1,9 @@
-package com.acme.gateway;
+package com.acme.gateway.controller;
 
 import com.acme.gateway.dto.CreateLoanResponseDTO;
 import com.acme.gateway.model.Loan;
+import com.acme.gateway.service.RedirectService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,12 +20,11 @@ public class RedirectController {
     @Value("${gateway.endpoint}")
     private String redirectURI;
 
+    @Autowired private RedirectService redirectService;    
+
     @PostMapping(path = "/redirect", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public  ResponseEntity<CreateLoanResponseDTO> redirectToHttp(@RequestBody Loan loan) {
-        // Process the data...
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(redirectURI));
-        return new ResponseEntity<CreateLoanResponseDTO>(headers, HttpStatus.FOUND);
+        return redirectService.createLoan( loan );
     }
     
 }
