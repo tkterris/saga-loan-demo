@@ -3,9 +3,9 @@ data:
   application.yaml: |-
     applicant:
       get:
-        endpoint: "http://loan-demo-model.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com:8080/sagaloandemo/crud/applicant"
+        endpoint: "http://loan-demo-model:8080/applicant"
       update:
-        endpoint: "http://loan-demo-model.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com:8080/sagaloandemo/crud/applicant"
+        endpoint: "http://loan-demo-model:8080/applicant"
     # Logger configuration
     logging:
       pattern:
@@ -16,7 +16,7 @@ data:
     server:
       port: 8080
       servlet:
-        context-path: /sagaloandemo/applicant
+        context-path: /
 kind: ConfigMap
 metadata:
   name: applicant-service

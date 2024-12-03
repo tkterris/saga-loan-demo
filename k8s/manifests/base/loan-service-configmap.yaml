@@ -3,9 +3,9 @@ data:
   application.yaml: |-
     loan:
       create:
-        endpoint: "http://loan-demo-model.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com:8080/sagaloandemo/crud/loan"
+        endpoint: "http://loan-demo-model:8080/loan"
       delete:
-        endpoint: "http://loan-demo-model.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com:8080/sagaloandemo/crud/loan"
+        endpoint: "http://loan-demo-model:8080/loan"
     # Logger configuration
     logging:
       pattern:
@@ -16,7 +16,7 @@ data:
     server:
       port: 8080
       servlet:
-        context-path: /sagaloandemo/loan
+        context-path: /
 kind: ConfigMap
 metadata:
   name: loan-service

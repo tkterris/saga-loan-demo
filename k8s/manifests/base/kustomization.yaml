@@ -28,11 +28,6 @@ resources:
 - loan-demo-model-service.yaml
 - loan-service-service.yaml
 - lra-coordinator-service.yaml
-- applicant-service-ingress.yaml
-- create-loan-ingress.yaml
-- loan-demo-model-ingress.yaml
-- loan-service-ingress.yaml
-- lra-coordinator-ingress.yaml
 
 images:
 - name: api-gateway
