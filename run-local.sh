@@ -12,8 +12,9 @@ sleep 5
 
 echo running lra-coordinator
 
-# might be 50000
-podman run --cidfile lra-coordinator.cid --detach -p 8080:8080 quay.io/abryson/lra-coordinator-quarkus-jvm:latest
+podman run --network=private  --cidfile lra-coordinator.cid --detach -p 8080:8080 quay.io/abryson/lra-coordinator-quarkus-jvm:latest
+#podman compose -f local-resources/compose.yaml up --detach
+
 
 echo "NOTE: to view the lra-coorindator log issue command: <\podman logs -f \$(\cat \lra-coordinator.cid)>"
 
