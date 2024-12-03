@@ -29,8 +29,8 @@ spec:
     spec:
       containers:
       - env:
-        - name: SPRING_CONFIG_LOCATION
-          value: "file:///app/application.yaml"
+        - name: SPRING_PROFILES_ACTIVE
+          value: "dev"
         image: loan-service
         imagePullPolicy: Always
         name: loan-service
@@ -44,16 +44,8 @@ spec:
           limits:
             memory: "2Gi"
             cpu: "500m"
-        volumeMounts:
-        - name: loan-service
-          mountPath: /app/application.yaml
-          subPath: application.yaml
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
-      volumes:
-        - name: loan-service
-          configMap:
-            name: loan-service
       imagePullSecrets:
         - name: quayio
       dnsPolicy: ClusterFirst

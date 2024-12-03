@@ -4,11 +4,6 @@ namespace: saga-loan-demo
 
 resources:
 - saga-loan-demo-namespace.yaml
-- api-gateway-configmap.yaml
-- applicant-service-configmap.yaml
-- create-loan-configmap.yaml
-- loan-demo-model-configmap.yaml
-- loan-service-configmap.yaml
 - init-db-auth-secret.yaml
 - init-db-secret.yaml
 - loan-demo-database-secret.yaml

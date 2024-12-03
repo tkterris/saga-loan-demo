@@ -29,8 +29,8 @@ spec:
     spec:
       containers:
       - env:
-        - name: SPRING_CONFIG_LOCATION
-          value: "file:///app/application.yaml"
+        - name: SPRING_PROFILES_ACTIVE
+          value: "dev"
         image: api-gateway
         imagePullPolicy: Always
         name: api-gateway
@@ -45,18 +45,12 @@ spec:
             memory: "2Gi"
             cpu: "500m"
         volumeMounts:
-        - name: api-gateway
-          mountPath: /app/application.yaml
-          subPath: application.yaml
         - name: api-gateway-cert
           mountPath: /app/certs
           readOnly: true          
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
       volumes:
-        - name: api-gateway
-          configMap:
-            name: api-gateway
         - name: api-gateway-cert
           secret:
             secretName: api-gateway-cert
