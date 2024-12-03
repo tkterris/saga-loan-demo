@@ -3,6 +3,18 @@ k8s manifests for the saga-loan-demo application
 
 ## Setup
 
+### Minikube setup
+
+If you want to use Minikube, configure it with the following commands:
+
+```
+minikube config set rootless true
+minikube start --driver=podman --container-runtime=containerd
+minikube addons enable ingress
+```
+
+### All k8s
+
 First, create the Kubernetes namespace and switch to that context:
 
 ```

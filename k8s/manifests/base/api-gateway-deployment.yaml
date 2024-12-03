@@ -48,20 +48,18 @@ spec:
         - name: api-gateway
           mountPath: /app/application.yaml
           subPath: application.yaml
-        # - name: api-gateway-cert
-        #   mountPath: /app
-        #   readOnly: true          
+        - name: api-gateway-cert
+          mountPath: /app/certs
+          readOnly: true          
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
       volumes:
         - name: api-gateway
           configMap:
             name: api-gateway
-        # - name: api-gateway-cert
-        #   projected:
-        #     sources:
-        #     - secret:
-        #         name: api-gateway-cert
+        - name: api-gateway-cert
+          secret:
+            secretName: api-gateway-cert
       imagePullSecrets:
         - name: quayio
       dnsPolicy: ClusterFirst
