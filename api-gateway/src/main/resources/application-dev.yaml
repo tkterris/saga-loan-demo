@@ -1,13 +1,13 @@
 server:
   port: 8443
   ssl:
-    key-store: /app/apigateway.crt
-    key-store-password: apigateway
-    key-alias: apigateway
+    key-store: /app/certs/sagademo.jks
+    key-store-password: sagademo
+    key-alias: sagademo
     key-store-type: JKS
 spring:
   security:
     csrf:
       enabled: false
 gateway:
-  endpoint: "http://create-loan.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/createLoan"
+  endpoint: "http://create-loan:8080"

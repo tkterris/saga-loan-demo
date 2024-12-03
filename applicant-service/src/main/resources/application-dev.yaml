@@ -1,9 +1,8 @@
 applicant:
   get:
-    endpoint: "http://loan-demo-model.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/sagaloandemo/crud/applicant"
+    endpoint: "http://loan-demo-model:8080/applicant"
   update:
-    endpoint: "http://loan-demo-model.apps.cluster-gfd2c.gfd2c.sandbox425.opentlc.com/sagaloandemo/crud/applicant"
-
+    endpoint: "http://loan-demo-model:8080/applicant"
 # Logger configuration
 logging:
   pattern:
@@ -11,7 +10,6 @@ logging:
   level:
     org.springframework: info
     org.springframework.security: debug
-
 server:
   port: 8080
   servlet:

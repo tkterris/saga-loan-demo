@@ -1,10 +1,8 @@
 spring:
-  profiles:
-    active: development
   application:
     name: "loanmodel"
   datasource:
-    url:  jdbc:postgresql://loan-demo-database.saga-loan-demo.svc.cluster.local:5432/sagademo?currentSchema=sagademo
+    url:  jdbc:postgresql://loan-demo-database:5432/sagademo?currentSchema=sagademo
     username: sagademo
     password: sagademo
   jpa:
@@ -29,4 +27,4 @@ logging:
 server:
   port: 8080
   servlet:
-    context-path: /sagaloandemo/crud  
+    context-path: /
