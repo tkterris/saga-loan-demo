@@ -7,9 +7,7 @@
     	<artifactId>sagaLoanDemo</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<groupId>com.acme.saga</groupId>
 	<artifactId>createLoan</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<name>create-loan</name>
 	<description>Saga loan demo - create loan</description>
 	<properties>
@@ -38,11 +36,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-    			<groupId>org.openapitools</groupId>
-    			<artifactId>jackson-databind-nullable</artifactId>
-    			<version>${openapi.version}</version>
 		</dependency>
 		<dependency>
     			<groupId>javax.validation</groupId>

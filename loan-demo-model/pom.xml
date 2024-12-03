@@ -9,8 +9,7 @@
 	</parent>
 	<groupId>com.acme.saga.sagamodel</groupId>
 	<artifactId>loanDemoModel</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-        <packaging>jar</packaging>
+    <packaging>jar</packaging>
 	<name>loan-demo-model</name>
 	<description>Loan demo - model service</description>
 	<properties>
