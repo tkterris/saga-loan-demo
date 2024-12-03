@@ -1,8 +1,8 @@
 applicant:
   get:
-    endpoint: "http://localhost:8082/sagaloandemo/crud/applicant"
+    endpoint: "http://localhost:8081/sagaloandemo/crud/applicant"
   update:
-    endpoint: "http://localhost:8082/sagaloandemo/crud/applicant"
+    endpoint: "http://localhost:8081/sagaloandemo/crud/applicant"
 
 # Logger configuration
 logging:

@@ -1,16 +1,16 @@
 #!/bin/bash
 
-echo stopping saga application
-kill -9 $(cat app.pid) && rm app.pid
+echo stopping create-loan / saga application
+kill -9 $(cat create-loan.pid) && rm create-loan.pid
 
-echo stopping flight service
-kill -9 $(cat flight.pid) && rm flight.pid
+echo stopping loan service
+kill -9 $(cat loan.pid) && rm loan.pid
 
-echo stopping train service
-kill -9 $(cat train.pid) && rm train.pid
+echo stopping applicant service
+kill -9 $(cat applicant.pid) && rm applicant.pid
 
-echo stopping payment service
-kill -9 $(cat payment.pid) && rm payment.pid
+echo stopping loan model service
+kill -9 $(cat loan-model.pid) && rm loan-model.pid
 
-echo stopping amq broker and lra-coordinator
-docker compose -f local-resources/compose.yaml stop
+echo stopping lra-coordinator
+podman kill --cidfile lra-coordinator.cid

@@ -7,7 +7,7 @@ camel:
     enabled: true
     coordinator-url: http://0.0.0.0:8080
     coordinator-context-path: /lra-coordinator    
-    local-participant-url: http://0.0.0.0:8081/loandemo/api
+    local-participant-url: http://0.0.0.0:8084/loandemo/api
     local-participant-context-path: /lra-participant
   service:
     lra.enabled: true
@@ -17,15 +17,15 @@ camel:
 saga-demo:
   loan:
     create:
-      endpoint: "http://localhost:8084/sagaloandemo/loan/createloan"
+      endpoint: "http://localhost:8082/sagaloandemo/loan/createloan"
     delete:
-      endpoint: "http://localhost:8084/sagaloandemo/loan/deleteloan"
+      endpoint: "http://localhost:8082/sagaloandemo/loan/deleteloan"
   applicant:
     update-limit:
       endpoint: "http://localhost:8083/sagaloandemo/applicant/updateloanlimit"
   saga:
     route:
-      endpoint: "direct:saga"
+      endpoint: "http://localhost:8084/saga/route"
 # Logger configuration
 logging:
   pattern:
@@ -35,6 +35,6 @@ logging:
     org.springframework.security: debug
 # server configuration
 server:
-  port: 8081
+  port: 8084
 #  servlet:
 #    context-path: /loandemo/api
