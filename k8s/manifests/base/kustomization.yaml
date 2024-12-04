@@ -1,0 +1,49 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: saga-loan-demo
+
+resources:
+- init-db-secret.yaml
+- loan-demo-database-secret.yaml
+- api-gateway-tls-cert-secret.yaml
+- loan-demo-database-pvc.yaml
+- lra-coordinator-pvc.yaml
+- api-gateway-deployment.yaml
+- applicant-service-deployment.yaml
+- loan-service-deployment.yaml
+- lra-coordinator-deployment.yaml
+- create-loan-deployment.yaml
+- loan-demo-model-deployment.yaml
+- loan-demo-database-deployment.yaml
+- applicant-service-service.yaml
+- create-loan-service.yaml
+- loan-demo-database-service.yaml
+- loan-demo-model-service.yaml
+- loan-service-service.yaml
+- lra-coordinator-service.yaml
+- api-gateway-service.yaml
+
+images:
+- name: api-gateway
+  newName: quay.io/tterris/saga-demo/api-gateway
+  newTag: latest
+- name: applicant-service
+  newName: quay.io/tterris/saga-demo/applicant-service
+  newTag: latest
+- name: create-loan
+  newName: quay.io/tterris/saga-demo/create-loan
+  newTag: latest
+- name: loan-demo-model
+  newName: quay.io/tterris/saga-demo/loan-demo-model
+  newTag: latest
+- name: loan-service
+  newName: quay.io/tterris/saga-demo/loan-service
+  newTag: latest
+- name: lra-coordinator
+  newName: quay.io/jbosstm/lra-coordinator
+  newTag: latest
+- name: postgres-db
+  newName: docker.io/postgres
+  newTag: latest
+
+

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: saga-loan-demo  
+  name: loan-demo-database
+  namespace: saga-loan-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loan-demo-database
+  strategy:
+      type: Recreate
+  template:
+    metadata:
+      labels: 
+        app.kubernetes.io/name: loan-demo-database
+      name: loan-demo-database
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: database-user
+              name: loan-demo-database
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: database-password
+              name: loan-demo-database
+        - name: POSTGRES_DATABASE
+          valueFrom:
+            secretKeyRef:
+              key: database-name
+              name: loan-demo-database
+        - name: PGDATA
+          value: /temp/data/pgdata
+        image: postgres-db
+        imagePullPolicy: IfNotPresent
+        name: postgresql
+        ports:
+        - containerPort: 5432
+          protocol: TCP
+        resources:
+          limits:
+            memory: 2Gi
+        securityContext:
+          capabilities: {}
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        volumeMounts:
+          - name: db-init-scripts
+            mountPath: /docker-entrypoint-initdb.d/
+          - mountPath: "/temp/data"
+            name: loan-demo-database-data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      volumes:
+      - name: loan-demo-database-data
+        persistentVolumeClaim:
+          claimName: loan-demo-database
+      - name: db-init-scripts
+        secret:
+          secretName: init-db-secret

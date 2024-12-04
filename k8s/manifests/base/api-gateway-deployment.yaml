@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api-gateway
+    app.kubernetes.io/component: api-gateway
+    app.kubernetes.io/instance: api-gateway
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: api-gateway-app
+  name: api-gateway
+  namespace: saga-loan-demo
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: api-gateway
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        deployment: api-gateway
+    spec:
+      containers:
+      - env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "dev"
+        image: api-gateway
+        imagePullPolicy: Always
+        name: api-gateway
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: api-gateway-cert
+          mountPath: /app/certs
+          readOnly: true          
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      volumes:
+        - name: api-gateway-cert
+          secret:
+            secretName: api-gateway-cert
+      imagePullSecrets:
+        - name: quayio
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
