@@ -3,7 +3,7 @@ k8s manifests for the saga-loan-demo application
 
 ## Setup
 
-First, check the `images` section of `k8s/manifests/base/kustomization.yaml` to ensure the correct registry locations and tags are being used. 
+First, check the `images` section of `k8s/base/kustomization.yaml` to ensure the correct registry locations and tags are being used. 
 This includes the five application images, the LRA coordinator image, and the PostGres database image. 
 
 ### Kubernetes
@@ -11,7 +11,7 @@ This includes the five application images, the LRA coordinator image, and the Po
 Create the Kubernetes namespace and switch to that context:
 
 ```
-kubectl apply -f k8s/manifests/base/saga-loan-demo-namespace.yaml
+kubectl apply -f k8s/base/saga-loan-demo-namespace.yaml
 kubectl config set-context --current --namespace=saga-loan-demo
 ```
 
@@ -24,8 +24,8 @@ kubectl create -f pullsecret.yml --namespace=saga-loan-demo
 Then, deploy the application:
 
 ```
-kubectl apply -k k8s/manifests/base
-kubectl apply -f k8s/manifests/base/api-gateway-ingress.yaml
+kubectl apply -k k8s/base
+kubectl apply -f k8s/base/api-gateway-ingress.yaml
 ```
 
 ### OpenShift
@@ -45,7 +45,7 @@ oc create -f pullsecret.yml --namespace=saga-loan-demo
 Then, deploy the application:
 
 ```
-oc apply -k k8s/manifests/base
+oc apply -k k8s/base
 oc create route passthrough api-gateway --service=api-gateway
 ```
 
