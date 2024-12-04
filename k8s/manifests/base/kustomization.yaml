@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: saga-loan-demo
 
 resources:
-- saga-loan-demo-namespace.yaml
 - init-db-auth-secret.yaml
 - init-db-secret.yaml
 - loan-demo-database-secret.yaml

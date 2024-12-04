@@ -25,7 +25,7 @@ kubectl config set-context --current --namespace=saga-loan-demo
 If you're using non-public registries, configure a pull secret with the name `quayio`. For example:
 
 ```
-kubectl create -f pullsecret.yml --namespace=NAMESPACEHERE
+kubectl create -f pullsecret.yml --namespace=saga-loan-demo
 ```
 
 Check the `images` section of `k8s/manifests/base/kustomization.yaml` to ensure the correct registry locations and tags are being used. 
@@ -85,5 +85,11 @@ create-loan  | 2024-12-03 21:37:19,334 ERROR org.apache.camel.processor.errorhan
 ....
 create-loan  | 2024-12-03 21:37:19,352 INFO  route2 : invoking deleteLoan...
 create-loan  | 2024-12-03 21:37:19,353 INFO  com.acme.saga.SagaRoute : Deleting loan with id: 12345
+```
+
+## Cleanup
+
+```
+kubectl delete namespace saga-loan-demo
 ```
 
