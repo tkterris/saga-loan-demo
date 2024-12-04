@@ -84,7 +84,7 @@ public class SagaRoute extends RouteBuilder {
                 .process( exchange -> {
                     log.info("sleeping...");
                 })                
-                .delay(120000)
+                .delay(10000)
                 .to("direct:updateLoanLimit")
             .setBody(header("Long-Running-Action"))            
             .end();
