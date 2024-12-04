@@ -1,30 +1,23 @@
 package com.acme.saga;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.model.rest.RestParamType;
-import org.apache.camel.model.dataformat.JsonLibrary;
-
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.apache.camel.spring.boot.CamelContextConfiguration;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.openapitools.jackson.nullable.JsonNullableModule;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.camel.component.gson.GsonDataFormat;
-import org.apache.camel.model.DataFormatDefinition;
-import org.apache.camel.CamelContext;
-import org.apache.camel.model.SagaPropagation;
-import org.apache.camel.component.jackson.JacksonConstants;
-import com.google.gson.FieldNamingPolicy;
-import lombok.extern.slf4j.Slf4j;
-import com.acme.saga.model.Loan;
-import com.acme.saga.dto.CreateLoanResponseDTO;
-import org.apache.camel.component.saga.SagaEndpoint;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.jackson.JacksonConstants;
+import org.apache.camel.model.rest.RestParamType;
+import org.apache.camel.spring.boot.CamelContextConfiguration;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+
+import com.acme.saga.dto.CreateLoanResponseDTO;
+import com.acme.saga.model.Loan;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -75,6 +68,7 @@ public class SagaRoute extends RouteBuilder {
                 // if propagation is enabled, it causes a disconnect with LRA coordinator          
                 .compensation("direct:deleteLoan")
                 .completion("direct:completeLoan")
+                .timeout(120, TimeUnit.SECONDS)
                 .process( exchange -> {
                     Loan loan = exchange.getIn().getBody(Loan.class);
                     exchange.getIn().setHeader("originalLoan", loan.toString());
@@ -84,7 +78,7 @@ public class SagaRoute extends RouteBuilder {
                 .process( exchange -> {
                     log.info("sleeping...");
                 })                
-                .delay(10000)
+                .delay(60000)
                 .to("direct:updateLoanLimit")
             .setBody(header("Long-Running-Action"))            
             .end();

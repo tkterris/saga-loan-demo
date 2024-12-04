@@ -42,7 +42,7 @@ spec:
             memory: "2Gi"
             cpu: "500m"
         volumeMounts:
-        - mountPath: "/ObjectStore"
+        - mountPath: "/deployments/ObjectStore"
           name: lra-coordinator-data
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File

@@ -173,24 +173,66 @@ create-loan  | 2024-12-03 21:37:09,623 INFO  route4 : Saga loan process has comp
 
 ### Saga Compensation
 
-With an invalid request, we get Saga compensation, as expected. When this command is tried (again, with the correct value of `API_GATEWAY_HOST`):
+In order to test Saga compensation, we can simulate one of the services being down. Submit the same request as in the happy path:
 
 ```
 export API_GATEWAY_HOST=api-gateway-saga-loan-demo.apps-crc.testing
-# invalid, missing ID
-curl -k -X POST -d '{"id":12345,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" https://$API_GATEWAY_HOST/redirect
+curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" https://$API_GATEWAY_HOST/redirect
 ```
 
-We then hit the `deleteLoan` Saga compensation step:
+However, before it completes (there is a 60 second pause) delete the `applicant-service` Deployment:
 
 ```
-create-loan  | 2024-12-03 21:37:19,218 INFO  com.acme.saga.SagaRoute : loan->id: 12345, amount: 50.00, applicantId: 1, approved: false, loanRequestDate: Fri Dec 15 13:27:01 UTC 2023
-2024-12-03 21:37:19,222 INFO  route1 : loan endpoint is: http://loan-service:8080/createloan
-create-loan  | 2024-12-03 21:37:19,334 ERROR org.apache.camel.processor.errorhandler.DefaultErrorHandler : Failed delivery for (MessageId: 629F1B6FD238177-0000000000000001 on ExchangeId: 629F1B6FD238177-0000000000000001). Exhausted after delivery attempt: 1 caught: org.apache.camel.http.base.HttpOperationFailedException: HTTP operation failed invoking http://loan-service:8080/createloan with statusCode: 304
-....
+# Kubernetes
+kubectl delete deployment applicant-service
+```
+```
+# OpenShift
+oc delete deployment applicant-service 
+```
+
+We then hit the `deleteLoan` Saga compensation step, as expected:
+
+```
 create-loan  | 2024-12-03 21:37:19,352 INFO  route2 : invoking deleteLoan...
-create-loan  | 2024-12-03 21:37:19,353 INFO  com.acme.saga.SagaRoute : Deleting loan with id: 12345
+create-loan  | 2024-12-03 21:37:19,353 INFO  com.acme.saga.SagaRoute : Deleting loan with id: 1
 ```
+
+### LRA Coordinator Failure
+
+If the LRA Coordinator fails, the LRA will fail. However, Saga guarantees LRA compensation with eventual 
+consistency. That is, the LRA compensation will eventually occur if a timeout is configured (see `SagaRoute`). 
+
+To test this, submit a request:
+
+```
+export API_GATEWAY_HOST=api-gateway-saga-loan-demo.apps-crc.testing
+curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" https://$API_GATEWAY_HOST/redirect
+```
+
+Before it completes, delete the `lra-coordinator` Deployment:
+
+```
+# Kubernetes
+kubectl delete deployment lra-coordinator
+```
+```
+# OpenShift
+oc delete deployment lra-coordinator
+```
+
+Then, after a few minutes, recreate it by applying the Kustomize template:
+
+```
+# Kubernetes
+kubectl apply -k k8s/base
+```
+```
+# OpenShift
+oc apply -k k8s/base
+```
+
+Eventually, the LRA will be compensated, as expected.
 
 ## Cleanup
 
