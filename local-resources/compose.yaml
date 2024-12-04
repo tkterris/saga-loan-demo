@@ -1,4 +1,0 @@
-services:
-  lra-coordinator:
-    image: "quay.io/abryson/lra-coordinator-quarkus-jvm:latest"
-    network_mode: "host"
