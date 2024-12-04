@@ -17,6 +17,7 @@ First, log in to your application registry and `registry.redhat.io`:
 
 ```
 export REG=quay.io
+export REG_PATH=tterris/saga-demo
 
 podman login registry.redhat.io
 podman login $REG
@@ -25,8 +26,6 @@ podman login $REG
 After building locally, run the following commands to create container images and push them to your registry.
 
 ```
-export REG_PATH=tterris/saga-demo
-
 podman build -f api-gateway/Dockerfile.openjdk17 -t api-gateway
 podman push api-gateway $REG/$REG_PATH/api-gateway
 

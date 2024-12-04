@@ -5,9 +5,14 @@ server:
     key-store-password: sagademo
     key-alias: sagademo
     key-store-type: JKS
+  servlet:
+    context-path: /
 spring:
   security:
     csrf:
       enabled: false
+# disable csrf for testing
+security.enable-csrf: false
+
 gateway:
-  endpoint: "http://create-loan:8080"
+  endpoint: "http://create-loan:8080/saga/route"
