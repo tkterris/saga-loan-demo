@@ -3,19 +3,12 @@ k8s manifests for the saga-loan-demo application
 
 ## Setup
 
-### Minikube setup
+First, check the `images` section of `k8s/manifests/base/kustomization.yaml` to ensure the correct registry locations and tags are being used. 
+This includes the five application images, the LRA coordinator image, and the PostGres database image. 
 
-If you want to use Minikube, configure it with the following commands:
+### Kubernetes
 
-```
-minikube config set rootless true
-minikube start --driver=podman --container-runtime=containerd
-minikube addons enable ingress
-```
-
-### All k8s
-
-First, create the Kubernetes namespace and switch to that context:
+Create the Kubernetes namespace and switch to that context:
 
 ```
 kubectl apply -f k8s/manifests/base/saga-loan-demo-namespace.yaml
@@ -28,25 +21,43 @@ If you're using non-public registries, configure a pull secret with the name `qu
 kubectl create -f pullsecret.yml --namespace=saga-loan-demo
 ```
 
-Check the `images` section of `k8s/manifests/base/kustomization.yaml` to ensure the correct registry locations and tags are being used. 
-This includes the five application images, the LRA coordinator image, and the PostGres database image.
-
-## Deployment
-
-Run the following command to apply the configuration:
+Then, deploy the application:
 
 ```
 kubectl apply -k k8s/manifests/base
+kubectl apply -f k8s/manifests/base/api-gateway-ingress.yaml
+```
+
+### OpenShift
+
+Create the project:
+
+```
+oc new-project saga-loan-demo
+```
+
+If you're using non-public registries, configure a pull secret with the name `quayio`. For example:
+
+```
+oc create -f pullsecret.yml --namespace=saga-loan-demo
+```
+
+Then, deploy the application:
+
+```
+oc apply -k k8s/manifests/base
+oc create route passthrough api-gateway --service=api-gateway
 ```
 
 ## Testing
 
 ### Happy Path
 
-From within the cluster, requests can be sent to the create-loan application to test Saga functionality. The following command should work:
+Requests can be sent to the api-gateway application to test Saga functionality. The following command should work, ensuring that `API_GATEWAY_HOST` matches the Ingress or Route hostname:
 
 ```
-curl -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" http://create-loan:8080/saga/route
+export API_GATEWAY_HOST=api-gateway-saga-loan-demo.apps-crc.testing
+curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" https://$API_GATEWAY_HOST/redirect
 ```
 
 We can see that it completes as expected:
@@ -69,11 +80,12 @@ create-loan  | 2024-12-03 21:37:09,623 INFO  route4 : Saga loan process has comp
 
 ### Saga Compensation
 
-With an invalid request, we get Saga compensation, as expected. When this command is tried:
+With an invalid request, we get Saga compensation, as expected. When this command is tried (again, with the correct value of `API_GATEWAY_HOST`):
 
 ```
+export API_GATEWAY_HOST=api-gateway-saga-loan-demo.apps-crc.testing
 # invalid, missing ID
-curl -X POST -d '{"id":12345,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" http://create-loan:8080/saga/route
+curl -k -X POST -d '{"id":12345,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" https://$API_GATEWAY_HOST/redirect
 ```
 
 We then hit the `deleteLoan` Saga compensation step:
@@ -89,7 +101,15 @@ create-loan  | 2024-12-03 21:37:19,353 INFO  com.acme.saga.SagaRoute : Deleting 
 
 ## Cleanup
 
+In Kubernetes:
+
 ```
 kubectl delete namespace saga-loan-demo
+```
+
+In OpenShift:
+
+```
+oc delete project saga-loan-demo
 ```
 

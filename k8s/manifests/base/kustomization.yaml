@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: saga-loan-demo
 
 resources:
-- init-db-auth-secret.yaml
 - init-db-secret.yaml
 - loan-demo-database-secret.yaml
 - api-gateway-tls-cert-secret.yaml
@@ -22,7 +21,7 @@ resources:
 - loan-demo-model-service.yaml
 - loan-service-service.yaml
 - lra-coordinator-service.yaml
-- api-gateway-ingress.yaml
+- api-gateway-service.yaml
 
 images:
 - name: api-gateway

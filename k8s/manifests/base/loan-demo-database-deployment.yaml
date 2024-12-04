@@ -36,10 +36,7 @@ spec:
               key: database-name
               name: loan-demo-database
         - name: PGDATA
-          valueFrom:
-            secretKeyRef:
-              key: database-data
-              name: loan-demo-database
+          value: /temp/data/pgdata
         image: postgres-db
         imagePullPolicy: IfNotPresent
         name: postgresql
