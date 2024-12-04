@@ -62,7 +62,11 @@ Then, generate a JKS keystore for API gateway:
 export TLS_KEYSTORE_PASSWORD=sagademo
 mkdir -p sagaApiGateway/ssl
 rm ./sagaApiGateway/ssl/sagademo.p12
-keytool -genkeypair -storetype PKCS12 -alias sagademo -keyalg RSA -keysize 4096 -validity 365 -keystore ./sagaApiGateway/ssl/sagademo.p12 -dname "CN=sagademo" -ext "SAN=DNS:*.sagademo.com" -keypass $TLS_KEYSTORE_PASSWORD -storepass $TLS_KEYSTORE_PASSWORD
+keytool -genkeypair -storetype PKCS12 \
+    -alias sagademo -keyalg RSA -keysize 4096 -validity 365 \
+    -keystore ./sagaApiGateway/ssl/sagademo.p12 -dname "CN=sagademo" \
+    -ext "SAN=DNS:*.sagademo.com" \
+    -keypass $TLS_KEYSTORE_PASSWORD -storepass $TLS_KEYSTORE_PASSWORD
 ```
 
 ### Local
