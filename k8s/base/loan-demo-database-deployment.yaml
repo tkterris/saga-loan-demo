@@ -37,7 +37,7 @@ spec:
               name: loan-demo-database
         - name: PGDATA
           value: /temp/data/pgdata
-        image: postgres-db
+        image: postgres-db #The image registry location is overwritten in kustomization.yaml. See README for more info.
         imagePullPolicy: IfNotPresent
         name: postgresql
         ports:
@@ -63,4 +63,4 @@ spec:
           claimName: loan-demo-database
       - name: db-init-scripts
         secret:
-          secretName: init-db-secret
+          secretName: init-db-scripts

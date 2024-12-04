@@ -28,7 +28,7 @@ spec:
         deployment: lra-coordinator
     spec:
       containers:
-      - image: lra-coordinator
+      - image: lra-coordinator #The image registry location is overwritten in kustomization.yaml. See README for more info.
         imagePullPolicy: Always
         name: lra-coordinator
         ports:

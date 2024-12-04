@@ -31,7 +31,7 @@ spec:
       - env:
         - name: SPRING_PROFILES_ACTIVE
           value: "dev"
-        image: applicant-service
+        image: applicant-service #The image registry location is overwritten in kustomization.yaml. See README for more info.
         imagePullPolicy: Always
         name: applicant-service
         ports:

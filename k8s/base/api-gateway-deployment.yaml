@@ -31,7 +31,12 @@ spec:
       - env:
         - name: SPRING_PROFILES_ACTIVE
           value: "dev"
-        image: api-gateway
+        - name: TLS_KEYSTORE_PASSWORD
+          valueFrom: 
+            secretKeyRef:
+              key: TLS_KEYSTORE_PASSWORD
+              name: api-gateway-cert
+        image: api-gateway #The image registry location is overwritten in kustomization.yaml. See README for more info.
         imagePullPolicy: Always
         name: api-gateway
         ports:

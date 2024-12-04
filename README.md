@@ -45,12 +45,25 @@ podman push loan-demo-model $REG/$REG_PATH/loan-demo-model
 
 podman build -f loan-service/Dockerfile.openjdk17 -t loan-service
 podman push loan-service $REG/$REG_PATH/loan-service
+
+# Optional, if you want to use the custom LRA coordinator
+podman build -f custom-lra-coordinator/Dockerfile-lra-coordinator.jvm -t lra-coordinator
+podman push lra-coordinator $REG/$REG_PATH/lra-coordinator
 ```
 
 ## Deploying
 
 First, check the `images` section of `k8s/base/kustomization.yaml` to ensure the correct registry locations and tags are being used. 
 This includes the five application images, the LRA coordinator image, and the PostGres database image. 
+
+Then, generate a JKS keystore for API gateway:
+
+```
+export TLS_KEYSTORE_PASSWORD=sagademo
+mkdir -p sagaApiGateway/ssl
+rm ./sagaApiGateway/ssl/sagademo.p12
+keytool -genkeypair -storetype PKCS12 -alias sagademo -keyalg RSA -keysize 4096 -validity 365 -keystore ./sagaApiGateway/ssl/sagademo.p12 -dname "CN=sagademo" -ext "SAN=DNS:*.sagademo.com" -keypass $TLS_KEYSTORE_PASSWORD -storepass $TLS_KEYSTORE_PASSWORD
+```
 
 ### Local
 
@@ -65,7 +78,7 @@ local/run-local.sh
 Create the Kubernetes namespace and switch to that context:
 
 ```
-kubectl apply -f k8s/base/saga-loan-demo-namespace.yaml
+kubectl apply -f k8s/saga-loan-demo-namespace.yaml
 kubectl config set-context --current --namespace=saga-loan-demo
 ```
 
@@ -75,11 +88,22 @@ If you're using non-public registries, configure a pull secret with the name `qu
 kubectl create -f pullsecret.yml --namespace=saga-loan-demo
 ```
 
+Create the Secret for the API gateway TLS keystore, as well as a ConfigMap containing the PostGres
+DB startup scripts:
+
+```
+kubectl create secret generic api-gateway-cert --from-file=sagademo.p12=./sagaApiGateway/ssl/sagademo.p12 \
+    --from-literal=TLS_KEYSTORE_PASSWORD=$TLS_KEYSTORE_PASSWORD
+kubectl create secret generic init-db-scripts --from-file=01-user.sql=./loan-demo-model/src/main/resources/sql/postgresql/user.sql \
+    --from-file=02-schema.sql=./loan-demo-model/src/main/resources/sql/postgresql/schema.sql \
+    --from-file=03-data.sql=./loan-demo-model/src/main/resources/sql/postgresql/data.sql
+```
+
 Then, deploy the application:
 
 ```
 kubectl apply -k k8s/base
-kubectl apply -f k8s/base/api-gateway-ingress.yaml
+kubectl apply -f k8s/api-gateway-ingress.yaml
 ```
 
 ### OpenShift
@@ -94,6 +118,17 @@ If you're using non-public registries, configure a pull secret with the name `qu
 
 ```
 oc create -f pullsecret.yml --namespace=saga-loan-demo
+```
+
+Create the Secret for the API gateway TLS keystore, as well as a ConfigMap containing the PostGres
+DB startup scripts:
+
+```
+oc create secret generic api-gateway-cert --from-file=sagademo.p12=./sagaApiGateway/ssl/sagademo.p12 \
+    --from-literal=TLS_KEYSTORE_PASSWORD=$TLS_KEYSTORE_PASSWORD
+oc create secret generic init-db-scripts --from-file=01-user.sql=./loan-demo-model/src/main/resources/sql/postgresql/user.sql \
+    --from-file=02-schema.sql=./loan-demo-model/src/main/resources/sql/postgresql/schema.sql \
+    --from-file=03-data.sql=./loan-demo-model/src/main/resources/sql/postgresql/data.sql
 ```
 
 Then, deploy the application:

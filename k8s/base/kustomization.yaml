@@ -3,9 +3,7 @@ kind: Kustomization
 namespace: saga-loan-demo
 
 resources:
-- init-db-secret.yaml
 - loan-demo-database-secret.yaml
-- api-gateway-tls-cert-secret.yaml
 - loan-demo-database-pvc.yaml
 - lra-coordinator-pvc.yaml
 - api-gateway-deployment.yaml

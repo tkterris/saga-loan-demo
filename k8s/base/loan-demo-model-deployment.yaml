@@ -31,7 +31,7 @@ spec:
       - env:
         - name: SPRING_PROFILES_ACTIVE
           value: "dev"
-        image: loan-demo-model
+        image: loan-demo-model #The image registry location is overwritten in kustomization.yaml. See README for more info.
         imagePullPolicy: Always
         name: loan-demo-model
         ports:
