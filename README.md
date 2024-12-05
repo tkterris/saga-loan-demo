@@ -173,9 +173,9 @@ We can see that it completes as expected:
 create-loan  | 2024-12-03 21:37:09,623 INFO  route4 : Saga loan process has completed...
 ```
 
-### LRA Coordinator HA
+### LRA Coordinator Failure
 
-If some-but-not-all of the LRA coordinators goes down, we expect the Saga transaction to complete without error. To test this, 
+If the LRA coordinator goes down and comes back up during an LRA, we expect the Saga LRA to complete without error. To test this, 
 submit a request:
 
 ```
@@ -183,18 +183,20 @@ curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"20
     -H "Content-Type: application/json" $API_GATEWAY_HOST/redirect
 ```
 
-However, before it completes (there is a 60 second pause) adjust the size of the `lra-coordinator` Deployment:
+However, before it completes (there is a 60 second pause) adjust the size of the `lra-coordinator` Deployment to 0 and back to 1:
 
 ```
 # Kubernetes
+kubectl scale --replicas=0 deployment/lra-coordinator
 kubectl scale --replicas=1 deployment/lra-coordinator
 ```
 ```
 # OpenShift
+oc scale --replicas=0 deployment/lra-coordinator
 oc scale --replicas=1 deployment/lra-coordinator
 ```
 
-And we see that the Saga LRA still completes successfully:
+This will delete and recreate the LRA Pod. We see that the Saga LRA still completes successfully:
 
 ```
 create-loan  | 2024-12-05 15:33:14,908 INFO  createLoanApi : entering saga route rest endpoint...
@@ -231,7 +233,7 @@ create-loan  | 2024-12-03 21:37:19,353 INFO  com.acme.saga.SagaRoute : Deleting 
 
 ### Catastrophic Failure
 
-Suppose there is an LRA failure, and at the same time the LRA coordinator cluster is down. The coordinators being 
+Suppose there is an LRA failure, and at the same time the LRA coordinator is down. The coordinator being 
 unavailable means that the LRA cannot be rolled back immediately. However, Saga guarantees LRA compensation with eventual 
 consistency. That is, the LRA compensation will eventually occur if a timeout is configured (see `SagaRoute`). 
 

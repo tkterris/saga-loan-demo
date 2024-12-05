@@ -11,7 +11,7 @@ metadata:
   namespace: saga-loan-demo
 spec:
   progressDeadlineSeconds: 600
-  replicas: 3
+  replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -62,8 +62,11 @@ spec:
         terminationMessagePolicy: File
       volumes:
       - name: lra-coordinator-data
-        # We use a shared store for HA, but this could be any other shared store, e.g. JDBCStore
+        # We use a PVC for HA, but this could be any other store, e.g. JDBCStore
         # https://www.narayana.io/docs/project/index.html
+        # Ideally we would use a shared store, allowing multiple LRA coordinators in
+        # an HA configuration, but that feature doesn't exist yet:
+        # https://issues.redhat.com/browse/JBTM-2959
         persistentVolumeClaim:
           claimName: lra-coordinator-data
       imagePullSecrets:
