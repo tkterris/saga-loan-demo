@@ -45,8 +45,11 @@ podman push loan-demo-model $REG/$REG_PATH/loan-demo-model
 
 podman build -f loan-service/Dockerfile.openjdk17 -t loan-service
 podman push loan-service $REG/$REG_PATH/loan-service
+```
 
-# Optional, if you want to use the custom LRA coordinator
+Optionally, if you want to use the custom LRA coordinator:
+
+```
 podman build -f custom-lra-coordinator/Dockerfile-lra-coordinator.jvm -t lra-coordinator
 podman push lra-coordinator $REG/$REG_PATH/lra-coordinator
 ```
@@ -107,7 +110,7 @@ Then, deploy the application:
 
 ```
 kubectl apply -k k8s/base
-kubectl apply -f k8s/api-gateway-ingress.yaml
+kubectl patch svc api-gateway -p '{"spec": {"type": "NodePort"}}'
 ```
 
 ### OpenShift
@@ -144,31 +147,59 @@ oc create route passthrough api-gateway --service=api-gateway
 
 ## Testing
 
-### Happy Path
-
-Requests can be sent to the api-gateway application to test Saga functionality. The following command should work, ensuring that `API_GATEWAY_HOST` matches the local hostname and context, the Kuberntes Ingress hostname, or the OpenShift Route hostname:
+The API gateway URL will depend on the deployment type. Set the `API_GATEWAY_HOST` environment variable
+to the hostname, which will be used in the request URL. It should match the local hostname and context, the 
+Kuberntes Ingress hostname, or the OpenShift Route hostname. For example:
 
 ```
-export API_GATEWAY_HOST=api-gateway-saga-loan-demo.apps-crc.testing
-curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" https://$API_GATEWAY_HOST/redirect
+export API_GATEWAY_HOST=https://api-gateway-saga-loan-demo.apps-crc.testing
+```
+
+### Happy Path
+
+Requests can be sent to the api-gateway application to test Saga functionality. The following command should 
+work as expected, if every component is successfully deployed:
+
+```
+curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' \
+    -H "Content-Type: application/json" $API_GATEWAY_HOST/redirect
 ```
 
 We can see that it completes as expected:
 
 ```
 2024-12-03 21:37:06,910 INFO  route1 : invoked addLoan endpoint...
-2024-12-03 21:37:06,910 INFO  com.acme.saga.SagaRoute : loan request id: 1
-create-loan  | 2024-12-03 21:37:06,910 INFO  com.acme.saga.SagaRoute : loan->id: 1, amount: 50.00, applicantId: 1, approved: false, loanRequestDate: Fri Dec 15 13:27:01 UTC 2023
-2024-12-03 21:37:06,988 INFO  route1 : loan endpoint is: http://loan-service:8080/createloan
-create-loan  | 2024-12-03 21:37:08,638 INFO  com.acme.saga.SagaRoute : createLoan DTO response: CreateLoanResponseDTO(loanId=1, requestAmount=50.00, applicantId=1, loanCreationDate=Tue Dec 03 21:37:08 UTC 2024, approved=null, comment=null - successfully added...)
-2024-12-03 21:37:08,639 INFO  com.acme.saga.SagaRoute : new loan id: 1 with reference loan id: 1 added to inprocess cache...
-2024-12-03 21:37:08,641 INFO  route1 : Loan added...
-create-loan  | 2024-12-03 21:37:08,641 INFO  route3 : invoked updateLoanLimit endpoint...
-create-loan  | 2024-12-03 21:37:08,641 INFO  com.acme.saga.SagaRoute : loan request id: 1
-2024-12-03 21:37:08,641 INFO  com.acme.saga.SagaRoute : loan->id: 1, amount: 50.00, applicantId: 1, approved: false, loanRequestDate: Fri Dec 15 13:27:01 UTC 2023
-create-loan  | 2024-12-03 21:37:08,642 INFO  route3 : updateLoanLimit endpoint is: http://applicant-service:8080/updateloanlimit
-2024-12-03 21:37:09,413 INFO  route3 : invoked updateLoanLimit...
+...
 create-loan  | 2024-12-03 21:37:09,623 INFO  route4 : Saga loan process has completed...
+```
+
+### LRA Coordinator HA
+
+If some-but-not-all of the LRA coordinators goes down, we expect the Saga transaction to complete without error. To test this, 
+submit a request:
+
+```
+curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' \
+    -H "Content-Type: application/json" $API_GATEWAY_HOST/redirect
+```
+
+However, before it completes (there is a 60 second pause) adjust the size of the `lra-coordinator` Deployment:
+
+```
+# Kubernetes
+kubectl scale --replicas=1 deployment/lra-coordinator
+```
+```
+# OpenShift
+oc scale --replicas=1 deployment/lra-coordinator
+```
+
+And we see that the Saga LRA still completes successfully:
+
+```
+create-loan  | 2024-12-05 15:33:14,908 INFO  createLoanApi : entering saga route rest endpoint...
+...
+create-loan  | 2024-12-05 15:34:17,397 INFO  route4 : Saga loan process has completed...
 ```
 
 ### Saga Compensation
@@ -176,11 +207,11 @@ create-loan  | 2024-12-03 21:37:09,623 INFO  route4 : Saga loan process has comp
 In order to test Saga compensation, we can simulate one of the services being down. Submit the same request as in the happy path:
 
 ```
-export API_GATEWAY_HOST=api-gateway-saga-loan-demo.apps-crc.testing
-curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" https://$API_GATEWAY_HOST/redirect
+curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' \
+    -H "Content-Type: application/json" $API_GATEWAY_HOST/redirect
 ```
 
-However, before it completes (there is a 60 second pause) delete the `applicant-service` Deployment:
+Before it completes, delete the `applicant-service` Deployment:
 
 ```
 # Kubernetes
@@ -198,40 +229,33 @@ create-loan  | 2024-12-03 21:37:19,352 INFO  route2 : invoking deleteLoan...
 create-loan  | 2024-12-03 21:37:19,353 INFO  com.acme.saga.SagaRoute : Deleting loan with id: 1
 ```
 
-### LRA Coordinator Failure
+### Catastrophic Failure
 
-If the LRA Coordinator fails, the LRA will fail. However, Saga guarantees LRA compensation with eventual 
+Suppose there is an LRA failure, and at the same time the LRA coordinator cluster is down. The coordinators being 
+unavailable means that the LRA cannot be rolled back immediately. However, Saga guarantees LRA compensation with eventual 
 consistency. That is, the LRA compensation will eventually occur if a timeout is configured (see `SagaRoute`). 
 
 To test this, submit a request:
 
 ```
-export API_GATEWAY_HOST=api-gateway-saga-loan-demo.apps-crc.testing
-curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' -H "Content-Type: application/json" https://$API_GATEWAY_HOST/redirect
+curl -k -X POST -d '{"id":1,"amount":50.00,"applicantId":1,"loanRequestDate":"2023-12-15T13:27:01","approved":false}' \
+    -H "Content-Type: application/json" $API_GATEWAY_HOST/redirect
 ```
 
-Before it completes, delete the `lra-coordinator` Deployment:
+Before it completes, delete both the `lra-coordinator` and `applicant-service` Deployments:
 
 ```
 # Kubernetes
 kubectl delete deployment lra-coordinator
+kubectl delete deployment applicant-service
 ```
 ```
 # OpenShift
 oc delete deployment lra-coordinator
+oc delete deployment applicant-service 
 ```
 
-Then, after a few minutes, recreate it by applying the Kustomize template:
-
-```
-# Kubernetes
-kubectl apply -k k8s/base
-```
-```
-# OpenShift
-oc apply -k k8s/base
-```
-
+Then, after a few minutes, recreate them by applying the Kustomize templates (described in the "Deploying" section). 
 Eventually, the LRA will be compensated, as expected.
 
 ## Cleanup

@@ -96,26 +96,7 @@ public class LoanServiceImpl implements LoanService {
                                                           .build();
         ResponseEntity<DeleteLoanResponseDTO> rEntity = null;
 
-        Optional<Loan> theLoan = loanRepository.findById( Id );
-
-        if(!theLoan.isPresent()) {
-            log.error("Trying to delete Loan with ID: " + Id.toString() + ", which does not exist...");
-            rDTO.setComment("Unable to find Loan with ID: " + Id.toString());
-            rDTO.setStatus(HttpStatus.NOT_FOUND);
-            responseHeaders.add("acme-loan-delete", "notfound");
-            rEntity = new ResponseEntity<>(rDTO, responseHeaders, HttpStatus.NOT_FOUND);
-            return rEntity;
-        }
-
-        try {
-            loanRepository.deleteById( Id );
-        } catch (EmptyResultDataAccessException e) {
-            rDTO.setComment("Unable to find Loan with ID: " + Id.toString());
-            rDTO.setStatus(HttpStatus.NOT_FOUND);
-            responseHeaders.add("acme-loan-delete", "notfound");
-            rEntity = new ResponseEntity<>(rDTO, responseHeaders, HttpStatus.NOT_FOUND);
-            return rEntity;
-        }
+        loanRepository.deleteById( Id );
 
         responseHeaders.add("acme-loan-delete", "success");
         rDTO.setComment("Loan with ID: " + Id.toString() + " deleted...");
